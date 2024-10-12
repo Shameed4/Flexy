@@ -6,16 +6,19 @@ const exerciseData = [
     title: "Wrist",
     image: `${process.env.PUBLIC_URL}/hand.webp`,
     description: "Exercise to improve wrist mobility and increase flexibility.",
+    routes: ['stretch-circle', 'stretch-loop'],  // Two routes for wrist exercises
   },
   {
     title: "Neck",
     image: `${process.env.PUBLIC_URL}/neck.webp`,
     description: "Exercise to enhance neck posture and reduce muscle tension.",
+    routes: ['neck-oval', 'neck-yesno'],  // Two routes for neck exercises
   },
   {
     title: "Shoulder",
     image: `${process.env.PUBLIC_URL}/shoulder.webp`,
     description: "Shoulder exercises to improve mobility and reduce shoulder pain.",
+    routes: ['shoulder-grab', 'shoulder-reach'],  // Two routes for shoulder exercises
   },
 ];
 
@@ -23,24 +26,19 @@ const Profile = () => {
   const [ratingValue, setRatingValue] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSecondExercise, setIsSecondExercise] = useState(false);
-  const [lastExercise, setLastExercise] = useState('first'); // Track the last exercise
+  const [exerciseRoutes, setExerciseRoutes] = useState([]); // Stores the current exercise's routes
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0); // Track the current exercise in a card
 
   // Function to calculate stars based on the returned value (0-100)
   const calculateRating = (value) => {
-    console.log("Calculating rating for value:", value);
     if (value <= 50) return 0;
-    const rating = Math.min(Math.floor((value - 50) / 10) + 1, 5);
-    console.log("Calculated rating:", rating);
-    return rating;
+    return Math.min(Math.floor((value - 50) / 10) + 1, 5);
   };
 
-  // Handle button click and simulate the GET request for the current exercise
-  const handleStart = async () => {
+  // Generalized function to make the GET request
+  const fetchExercise = async (route) => {
     setIsLoading(true);
-    setLastExercise('first'); // Track that the first exercise is being performed
-
-    console.log("Starting first exercise...");
-    fetch('http://127.0.0.1:5000/stretch-circle', {
+    fetch(`http://127.0.0.1:5000/${route}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -49,62 +47,29 @@ const Profile = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Response from first exercise API:", data);
         const value = parseFloat(data.output);
-        console.log("Parsed output value for first exercise:", value);
         setRatingValue(calculateRating(value));
         setIsLoading(false);
       })
       .catch((error) => {
-        console.error('Error fetching data for first exercise:', error);
+        console.error('Error fetching exercise data:', error);
         setIsLoading(false);
       });
   };
 
-  // Handle the "Redo" button to repeat the latest exercise
-  const handleRedo = async () => {
-    console.log("Redoing the last exercise:", lastExercise);
-    if (lastExercise === 'first') {
-      handleStart();  // Redo the first exercise
-    } else if (lastExercise === 'second') {
-      handleNextExercise();  // Redo the second exercise
-    }
+  // Handle start button for the first exercise
+  const handleStart = (routes) => {
+    setExerciseRoutes(routes); // Store the routes for the current exercise
+    setCurrentExerciseIndex(0); // Set to the first exercise
+    setIsSecondExercise(false); // Reset second exercise flag
+    fetchExercise(routes[0]); // Fetch the first exercise
   };
 
-  // Handle the "Next Exercise" button to make a different request
-  const handleNextExercise = async () => {
-    setIsLoading(true);
-    setLastExercise('second'); // Track that the second exercise is being performed
-
-    console.log("Starting second exercise...");
-    fetch('http://127.0.0.1:5000/stretch-loop', {  // Different endpoint for next exercise
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      mode: 'cors',
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Response from second exercise API:", data);
-        const value = parseFloat(data.output);
-        console.log("Parsed output value for second exercise:", value);
-        setRatingValue(calculateRating(value));
-        setIsLoading(false);
-        setIsSecondExercise(true); // Mark that second workout is done
-      })
-      .catch((error) => {
-        console.error('Error fetching data for second exercise:', error);
-        setIsLoading(false);
-      });
-  };
-
-  // Handle "Back to Exercises" button to reset the state and go back to the cards
-  const handleBackToExercises = () => {
-    console.log("Going back to exercise cards");
-    setRatingValue(null);  // Reset the rating
-    setIsSecondExercise(false);  // Reset second workout state
-    setLastExercise('first');  // Reset to first exercise by default
+  // Handle next exercise button (fetch the second exercise in the routes)
+  const handleNextExercise = () => {
+    setIsSecondExercise(true); // Mark that we're doing the second exercise
+    setCurrentExerciseIndex(1); // Set to the second exercise
+    fetchExercise(exerciseRoutes[1]); // Fetch the second exercise
   };
 
   // Conditionally render the loading message or the rating
@@ -130,7 +95,6 @@ const Profile = () => {
 
   // Conditionally render the rating once the request is successful
   if (ratingValue !== null) {
-    console.log("Rendering rating:", ratingValue);
     return (
       <Box
         component="main"
@@ -163,7 +127,7 @@ const Profile = () => {
         {/* Redo Button */}
         <Button
           variant="outlined"
-          onClick={handleRedo}
+          onClick={() => fetchExercise(exerciseRoutes[currentExerciseIndex])} // Redo the current exercise
           sx={{
             mt: 3,
             p: 1,
@@ -184,7 +148,7 @@ const Profile = () => {
         {ratingValue >= 4 && !isSecondExercise && (
           <Button
             variant="outlined"
-            onClick={handleNextExercise}
+            onClick={handleNextExercise} // Proceed to next exercise
             sx={{
               mt: 3,
               p: 1,
@@ -205,7 +169,7 @@ const Profile = () => {
         {isSecondExercise && ratingValue >= 4 && (
           <Button
             variant="outlined"
-            onClick={handleBackToExercises}
+            onClick={() => setRatingValue(null)} // Reset to show exercises again
             sx={{
               mt: 3,
               p: 1,
@@ -274,7 +238,7 @@ const Profile = () => {
                     },
                   }}
                   disableElevation
-                  onClick={handleStart}
+                  onClick={() => handleStart(memory.routes)} // Start exercise for this card
                   size="medium"
                 >
                   Start
