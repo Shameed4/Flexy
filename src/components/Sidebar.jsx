@@ -15,6 +15,10 @@ import Diversity3OutlinedIcon from "@mui/icons-material/Diversity3Outlined";
 import TextsmsOutlinedIcon from "@mui/icons-material/TextsmsOutlined";
 import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 
+import AnalyticsIcon from '@mui/icons-material/Analytics'; // Stats
+import AccessibilityNewIcon from '@mui/icons-material/AccessibilityNew'; // Stretch
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter'; // Fitness
+
 const Sidebar = ({ setMainArea }) => {
   const drawerWidth = 240;
 
@@ -57,13 +61,13 @@ const Sidebar = ({ setMainArea }) => {
                 <ListItemButton>
                   <ListItemIcon>
                     {index == 0 && (
-                      <Face2OutlinedIcon sx={{ color: "#795030" }} />
+                      <AnalyticsIcon sx={{ color: "#795030" }} />
                     )}
                     {index == 1 && (
-                      <CameraOutlinedIcon sx={{ color: "#795030" }} />
+                      <AccessibilityNewIcon sx={{ color: "#795030" }} />
                     )}
                     {index == 2 && (
-                      <Diversity3OutlinedIcon sx={{ color: "#795030" }} />
+                      <FitnessCenterIcon sx={{ color: "#795030" }} />
                     )}
                     {index == 3 && (
                       <TextsmsOutlinedIcon sx={{ color: "#795030" }} />
