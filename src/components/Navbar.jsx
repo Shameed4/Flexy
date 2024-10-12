@@ -31,7 +31,6 @@ const Navbar = () => {
               fontFamily: "Berkshire Swash",
               fontSize: "xx-large",
               fontWeight: "bold",
-              marginLeft: "70px",
             }}
           >
             Flexy
@@ -41,10 +40,6 @@ const Navbar = () => {
             direction="row"
             sx={{ justifyContent: "end", alignItems: "center", flexGrow: 2 }}
           >
-            <SignedIn>
-              <UserButton afterSignOutUrl="/sign-in" />
-            </SignedIn>
-            <SignedOut>
               <Button
                 variant="contained"
                 color="inherit"
@@ -59,7 +54,6 @@ const Navbar = () => {
               >
                 SIGN IN
               </Button>
-            </SignedOut>
           </Stack>
         </Toolbar>
       </AppBar>

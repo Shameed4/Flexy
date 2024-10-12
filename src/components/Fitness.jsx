@@ -33,20 +33,20 @@ const user = {
 
 const exerciseData = [
   {
-    title: "Wrist",
-    image: `${process.env.PUBLIC_URL}/hand.webp`,
+    title: "Jumping Jacks",
+    image: `${process.env.PUBLIC_URL}/jumping.webp`,
     description:
       "A relaxing vacation on the beautiful beaches of Bali, enjoying the sun and surf.",
   },
   {
-    title: "Neck",
-    image: `${process.env.PUBLIC_URL}/neck.webp`,
+    title: "Lunges",
+    image: `${process.env.PUBLIC_URL}/lunge.webp`,
     description:
       "A relaxing vacation on the beautiful beaches of Bali, enjoying the sun and surf.",
   },
   {
-    title: "Shoulder",
-    image: `${process.env.PUBLIC_URL}/shoulder.webp`,
+    title: "Pushups",
+    image: `${process.env.PUBLIC_URL}/pushup.webp`,
     description:
       "A relaxing vacation on the beautiful beaches of Bali, enjoying the sun and surf.",
   },
