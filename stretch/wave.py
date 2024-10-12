@@ -19,8 +19,8 @@ def generate_wave_path(num_points, amplitude, wavelength, center, num_waves):
 # Function to draw the predefined path
 def draw_path(image, path, touched_points):
     for i, point in enumerate(path):
-        color = (0, 0, 255) if touched_points[i] else (0, 255, 0)
-        cv2.circle(image, point, 5, color, -1)  # Small circles for the path
+        color = (255, 255, 0) if touched_points[i] else (0, 0, 0)
+        cv2.circle(image, point, 10, color, -1)  # Small circles for the path
 
 cap = cv2.VideoCapture(1)  # Change to the appropriate camera index
 

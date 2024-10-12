@@ -3,12 +3,9 @@ import cv2
 import mediapipe as mp
 import numpy as np
 
-# Initialize MediaPipe Hands and Pose
+# Initialize MediaPipe Hands
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(max_num_hands=1)
-
-mp_pose = mp.solutions.pose
-pose = mp_pose.Pose()
 
 # Function to generate circular points with a high number of points for a smoother look
 def generate_detailed_circle_path(num_points, radius, center):
@@ -21,15 +18,8 @@ def generate_detailed_circle_path(num_points, radius, center):
 # Function to draw the predefined path
 def draw_path(image, path, touched_points):
     for i, point in enumerate(path):
-        color = (0, 0, 255) if touched_points[i] else (0, 255, 0)
-        cv2.circle(image, point, 5, color, -1)  # Small circles for the path
-
-# Function to draw pose landmarks
-def draw_pose_landmarks(image, landmarks):
-    for i, landmark in enumerate(landmarks.landmark):
-        h, w, _ = image.shape
-        x, y = int(landmark.x * w), int(landmark.y * h)
-        cv2.circle(image, (x, y), 5, (0, 255, 0), -1)
+        color = (255, 255, 0) if touched_points[i] else (0, 0, 0)
+        cv2.circle(image, point, 10, color, -1)  # Small circles for the path
 
 cap = cv2.VideoCapture(1)  # Change to the appropriate camera index
 
@@ -60,7 +50,6 @@ while True:
         touched_points.append([False] * num_points)
 
     results_hands = hands.process(image_rgb)
-    results_pose = pose.process(image_rgb)
 
     # If hands are detected
     if results_hands.multi_hand_landmarks:
@@ -77,10 +66,6 @@ while True:
             for i, path_point in enumerate(predefined_paths[current_path]):
                 if not touched_points[current_path][i] and np.linalg.norm(np.array([finger_x, finger_y]) - np.array(path_point)) < 20:
                     touched_points[current_path][i] = True
-
-    # If pose landmarks are detected
-    if results_pose.pose_landmarks:
-        draw_pose_landmarks(image, results_pose.pose_landmarks)
 
     # Draw the current predefined path, updating colors based on touched status
     draw_path(image, predefined_paths[current_path], touched_points[current_path])
