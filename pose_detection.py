@@ -29,10 +29,18 @@ connections = [
     ("right_shoulder", "right_hip"),
 ]
 
-# Initialize a dictionary to store the saved pose
-saved_pose = {}
-save_timer = None  # Timer variable for countdown
+# Initialize dictionaries to store saved poses
+saved_pose_s = {}
+saved_pose_r = {}
+save_timer_s = None  # Timer variable for 's' key countdown
+save_timer_r = None  # Timer variable for 'r' key countdown
 countdown_duration = 2  # 2-second delay for pose save
+
+# Initialize counters
+push_up_count = 0
+r_previous_greater = False  # Track if previous R score was greater than S score
+down_to_resting_count = 0  # Track transitions from down to resting
+current_state = "Neither"  # Track current state of the position
 
 # Function to calculate angle between two vectors
 def calculate_angle(v1, v2):
@@ -74,8 +82,7 @@ def calculate_direction_similarity(current_pose, saved_pose):
 
 # Function to calculate total similarity
 def calculate_total_similarity(current_pose, saved_pose):
-    position_score = 0
-    # position_score = calculate_position_similarity(current_pose, saved_pose)
+    position_score = calculate_position_similarity(current_pose, saved_pose)
     direction_score = calculate_direction_similarity(current_pose, saved_pose)
 
     # Combine scores (you may want to adjust the weights)
@@ -116,33 +123,74 @@ while cap.isOpened():
                 end_point = (int(end_coord['x'] * frame.shape[1]), int(end_coord['y'] * frame.shape[0]))
                 cv2.line(frame, start_point, end_point, (255, 0, 0), 2)  # Blue line
 
-    # Check for the 's' key to start the timer
+    # Check for the 's' key to start the timer for the first saved pose
     key = cv2.waitKey(1) & 0xFF
     if key == ord('s'):
-        save_timer = time.time()  # Set the start time for countdown
+        save_timer_s = time.time()  # Set the start time for 's' countdown
         print("Get ready! Saving pose in 2 seconds...")
 
-    # If timer started, check if countdown duration has passed
-    if save_timer and (time.time() - save_timer >= countdown_duration):
-        # Capture and save the pose
-        saved_pose = current_pose.copy()
-        print("Pose saved.")
-        cv2.imwrite("saved_pose.png", frame)  # Save the current frame as an image
-        saved_image = cv2.imread("saved_pose.png")  # Read the saved image
-        cv2.imshow("Saved Pose", saved_image)  # Display the saved image
-        save_timer = None  # Reset timer after saving
+    # Check for the 'r' key to start the timer for the second saved pose
+    if key == ord('r'):
+        save_timer_r = time.time()  # Set the start time for 'r' countdown
+        print("Get ready! Saving pose in 2 seconds...")
 
-    # If a saved pose exists, calculate and display similarity
-    if saved_pose:
-        similarity_score = calculate_total_similarity(current_pose, saved_pose)
-        cv2.putText(frame, f"Similarity Score: {similarity_score:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+    # If timer for 's' key started, check if countdown duration has passed
+    if save_timer_s and (time.time() - save_timer_s >= countdown_duration):
+        # Capture and save the pose
+        saved_pose_s = current_pose.copy()
+        print("Pose 's' saved.")
+        cv2.imwrite("saved_pose_s.png", frame)  # Save the current frame as an image
+        save_timer_s = None  # Reset timer after saving
+
+    # If timer for 'r' key started, check if countdown duration has passed
+    if save_timer_r and (time.time() - save_timer_r >= countdown_duration):
+        # Capture and save the pose
+        saved_pose_r = current_pose.copy()
+        print("Pose 'r' saved.")
+        cv2.imwrite("saved_pose_r.png", frame)  # Save the current frame as an image
+        save_timer_r = None  # Reset timer after saving
+
+    # If saved poses exist, calculate and display similarity
+    similarity_score_s = None
+    similarity_score_r = None
+    if saved_pose_s:
+        similarity_score_s = calculate_total_similarity(current_pose, saved_pose_s)
+        cv2.putText(frame, f"Similarity Score S: {similarity_score_s:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+
+    if saved_pose_r:
+        similarity_score_r = calculate_total_similarity(current_pose, saved_pose_r)
+        cv2.putText(frame, f"Similarity Score R: {similarity_score_r:.2f}", (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+
+    # Determine current position
+    is_resting = similarity_score_r is not None and similarity_score_r < 2 and (similarity_score_s is not None and similarity_score_s > 5)
+    is_down = similarity_score_r is not None and similarity_score_r > 5 and (similarity_score_s is not None and similarity_score_s < 2)
+
+    # Check for transitions and update counts
+    if is_down:
+        current_state = "Down"
+        if r_previous_greater:
+            down_to_resting_count += 1
+            print("Transition from Down to Resting counted! Total transitions:", down_to_resting_count)
+            r_previous_greater = False  # Reset the flag after counting
+    elif is_resting:
+        current_state = "Resting"
+        r_previous_greater = True  # Set the flag if R is greater
+    else:
+        current_state = "Neither"
+
+    # Display the current state and counts
+    cv2.putText(frame, f"Current State: {current_state}", (10, 110), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
+    cv2.putText(frame, f"Push-up Count: {push_up_count}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
+    cv2.putText(frame, f"Down to Resting Count: {down_to_resting_count}", (10, 190), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
+
+    # Check for 'X' key to reset the counter
+    if key == ord('x'):
+        down_to_resting_count = 0
+        print("Counter reset!")
 
     # Show the frame
-    cv2.imshow('Pose Detection', frame)
+    cv2.imshow('Push-Up Counter', frame)
 
-    # Quit if 'q' is pressed
-    if key == ord('q'):
-        break
-
+# Release resources
 cap.release()
 cv2.destroyAllWindows()
