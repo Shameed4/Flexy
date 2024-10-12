@@ -37,6 +37,13 @@ pose_count = 3  # Initial number of poses
 reps_completed = 0  # Count of completed reps
 transition_state = 0  # 0: no transition, 1: 1 to 2, 2: 2 to 3
 
+# Variables for pose holding and points
+pose_hold_start_time = None
+is_in_pose = False
+pose_hold_duration = 0
+pose_hold_threshold = 5  # seconds
+points = 0
+
 # Function to calculate angle between two vectors
 def calculate_angle(v1, v2):
     dot_product = np.dot(v1, v2)
@@ -84,6 +91,54 @@ def calculate_total_similarity(current_pose, saved_pose):
     total_score = position_score + direction_score
     return total_score
 
+# Function to generate feedback based on pose differences
+def generate_feedback(current_pose, saved_pose):
+    feedback = []
+    position_threshold = 0.05  # Adjust as needed
+    angle_threshold = 0.15  # Radians (~8.6 degrees)
+
+    # Compare y position of shoulders
+    for side in ['left', 'right']:
+        shoulder = f'{side}_shoulder'
+        if shoulder in current_pose and shoulder in saved_pose:
+            curr_y = current_pose[shoulder]['y']
+            saved_y = saved_pose[shoulder]['y']
+            diff_y = curr_y - saved_y  # Positive if current is lower in the image
+            if abs(diff_y) > position_threshold:
+                if diff_y > 0:
+                    feedback.append(f'Raise your {side} shoulder')
+                else:
+                    feedback.append(f'Lower your {side} shoulder')
+
+    # Compare angles at elbows
+    for side in ['left', 'right']:
+        shoulder = f'{side}_shoulder'
+        elbow = f'{side}_elbow'
+        wrist = f'{side}_wrist'
+        if shoulder in current_pose and elbow in current_pose and wrist in current_pose and \
+           shoulder in saved_pose and elbow in saved_pose and wrist in saved_pose:
+            # Calculate current angle at elbow
+            curr_angle = calculate_joint_angle(current_pose[shoulder], current_pose[elbow], current_pose[wrist])
+            # Calculate saved angle at elbow
+            saved_angle = calculate_joint_angle(saved_pose[shoulder], saved_pose[elbow], saved_pose[wrist])
+            diff_angle = curr_angle - saved_angle
+            if abs(diff_angle) > angle_threshold:
+                if diff_angle > 0:
+                    feedback.append(f'Straighten your {side} elbow')
+                else:
+                    feedback.append(f'Bend your {side} elbow more')
+
+    # Additional feedback can be added for other joints or landmarks
+
+    return feedback
+
+# Function to calculate joint angle at point b formed by points a, b, c
+def calculate_joint_angle(a, b, c):
+    ba = np.array([a['x'] - b['x'], a['y'] - b['y']])
+    bc = np.array([c['x'] - b['x'], c['y'] - b['y']])
+    angle = calculate_angle(ba, bc)
+    return angle
+
 # Start video capture
 cap = cv2.VideoCapture(0)
 
@@ -126,7 +181,7 @@ while cap.isOpened():
         print(f"Get ready! Saving pose {pose_index} in 2 seconds...")
 
     # If timer for a key started, check if countdown duration has passed
-    for pose_index in save_timers.keys():
+    for pose_index in list(save_timers.keys()):
         if save_timers[pose_index] and (time.time() - save_timers[pose_index] >= countdown_duration):
             # Capture and save the pose
             saved_poses[pose_index] = current_pose.copy()
@@ -145,6 +200,34 @@ while cap.isOpened():
             current_pose_index = pose_index
             break  # Stop once we find a valid current pose
 
+    # Handle pose holding and point awarding
+    is_pose_correct = False
+    if current_pose_index is not None:
+        is_pose_correct = True
+
+    if is_pose_correct:
+        if not is_in_pose:
+            is_in_pose = True
+            pose_hold_start_time = time.time()
+            pose_hold_duration = 0
+        else:
+            pose_hold_duration = time.time() - pose_hold_start_time
+            if pose_hold_duration >= pose_hold_threshold:
+                points += 1
+                print(f"Pose held for {pose_hold_threshold} seconds. Points awarded: {points}")
+                # Reset the timer to continue awarding points every pose_hold_threshold seconds
+                pose_hold_start_time = time.time()
+    else:
+        if is_in_pose:
+            is_in_pose = False
+            pose_hold_start_time = None
+            pose_hold_duration = 0
+
+    # Generate feedback if not in correct pose
+    feedback_messages = []
+    if not is_pose_correct and current_pose_index is not None and current_pose_index in saved_poses:
+        feedback_messages = generate_feedback(current_pose, saved_poses[current_pose_index])
+
     # Count transitions from position 1 to 2 to 3
     if current_pose_index == '1':
         transition_state = 0  # Reset state when in position 1
@@ -157,10 +240,26 @@ while cap.isOpened():
         transition_state = 1  # Reset to state 1 when back in position 2
 
     # Display similarity scores and current pose
+    y_offset = 50
     for index, score in similarity_scores.items():
-        cv2.putText(frame, f'Pose {index}: {score:.2f}', (10, 50 + 20 * int(index) % 3), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        cv2.putText(frame, f'Pose {index}: {score:.2f}', (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        y_offset += 20
 
-    cv2.putText(frame, f'Reps Completed: {reps_completed}', (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 1)  # Show completed reps count
+    if is_pose_correct:
+        cv2.putText(frame, f'Pose Matched: {current_pose_index}', (10, y_offset + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+    else:
+        cv2.putText(frame, 'Pose Not Matched', (10, y_offset + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+
+    # Display feedback messages
+    for i, msg in enumerate(feedback_messages):
+        cv2.putText(frame, msg, (10, y_offset + 50 + i * 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+
+    # Display pose hold duration and points
+    if is_in_pose:
+        cv2.putText(frame, f'Hold Time: {pose_hold_duration:.1f}s', (10, y_offset + 100), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+    cv2.putText(frame, f'Points: {points}', (10, y_offset + 130), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+
+    cv2.putText(frame, f'Reps Completed: {reps_completed}', (10, y_offset + 160), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 1)  # Show completed reps count
 
     # Show the frame with drawn landmarks and pose data
     cv2.imshow('Push-Up Counter', frame)
