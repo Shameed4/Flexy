@@ -3,33 +3,24 @@ import cv2
 import mediapipe as mp
 import numpy as np
 
-# Initialize MediaPipe Hands and Pose
+# Initialize MediaPipe Hands
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(max_num_hands=1)
 
-mp_pose = mp.solutions.pose
-pose = mp_pose.Pose()
-
-# Function to generate circular points with a high number of points for a smoother look
-def generate_detailed_circle_path(num_points, radius, center):
-    return [
-        (int(center[0] + radius * np.cos(2 * np.pi * i / num_points)),
-         int(center[1] + radius * np.sin(2 * np.pi * i / num_points)))
-        for i in range(num_points)
-    ]
+# Function to generate a wave-shaped path with multiple waves
+def generate_wave_path(num_points, amplitude, wavelength, center, num_waves):
+    path = []
+    for i in range(num_points):
+        x = int(center[0] + (i - num_points // 2) * (wavelength / num_points))  # Horizontal linear movement
+        y = int(center[1] + amplitude * np.sin(2 * np.pi * num_waves * i / num_points))  # Multiple vertical waves
+        path.append((x, y))
+    return path
 
 # Function to draw the predefined path
 def draw_path(image, path, touched_points):
     for i, point in enumerate(path):
         color = (0, 0, 255) if touched_points[i] else (0, 255, 0)
         cv2.circle(image, point, 5, color, -1)  # Small circles for the path
-
-# Function to draw pose landmarks
-def draw_pose_landmarks(image, landmarks):
-    for i, landmark in enumerate(landmarks.landmark):
-        h, w, _ = image.shape
-        x, y = int(landmark.x * w), int(landmark.y * h)
-        cv2.circle(image, (x, y), 5, (0, 255, 0), -1)
 
 cap = cv2.VideoCapture(1)  # Change to the appropriate camera index
 
@@ -50,17 +41,18 @@ while True:
     height, width, _ = image.shape
     center = (width // 2, height // 2)
 
-    # Define the radius dynamically based on the smaller dimension of the screen
-    max_radius = min(width, height) // 3  # Reduce a bit to leave space
+    # Define wave parameters
+    amplitude = height // 4  # Vertical height of the wave
+    wavelength = width // 2  # Horizontal stretch of the wave
+    num_waves = 3  # Number of complete waves
+    num_points = 200  # Higher number of points for smooth wave shape
 
     if not predefined_paths:
-        # Generate a circle path with many points (more points = smoother line)
-        num_points = 200  # Increase the number of points to make it look like a continuous line
-        predefined_paths.append(generate_detailed_circle_path(num_points, max_radius, center))
+        # Generate a wave-shaped path with multiple waves
+        predefined_paths.append(generate_wave_path(num_points, amplitude, wavelength, center, num_waves))
         touched_points.append([False] * num_points)
 
     results_hands = hands.process(image_rgb)
-    results_pose = pose.process(image_rgb)
 
     # If hands are detected
     if results_hands.multi_hand_landmarks:
@@ -78,10 +70,6 @@ while True:
                 if not touched_points[current_path][i] and np.linalg.norm(np.array([finger_x, finger_y]) - np.array(path_point)) < 20:
                     touched_points[current_path][i] = True
 
-    # If pose landmarks are detected
-    if results_pose.pose_landmarks:
-        draw_pose_landmarks(image, results_pose.pose_landmarks)
-
     # Draw the current predefined path, updating colors based on touched status
     draw_path(image, predefined_paths[current_path], touched_points[current_path])
 
@@ -89,7 +77,7 @@ while True:
     if all(touched_points[current_path]):
         break
 
-    cv2.imshow("Air Drawing", image)
+    cv2.imshow("Air Drawing - Multiple Waves", image)
 
     key = cv2.waitKey(5) & 0xFF
     if key == 27:  # Press 'Esc' to exit
