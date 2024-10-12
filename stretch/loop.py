@@ -10,13 +10,16 @@ hands = mp_hands.Hands(max_num_hands=1)
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose()
 
-# Function to generate circular points with a high number of points for a smoother look
-def generate_detailed_circle_path(num_points, radius, center):
-    return [
-        (int(center[0] + radius * np.cos(2 * np.pi * i / num_points)),
-         int(center[1] + radius * np.sin(2 * np.pi * i / num_points)))
-        for i in range(num_points)
-    ]
+# Function to generate an infinity shape (proper figure-eight)
+def generate_infinity_path(num_points, radius, center):
+    path = []
+    # Loop through the total number of points
+    for i in range(num_points):
+        t = (i / num_points) * 2 * np.pi  # Normalize the step to go around the figure eight
+        x = int(center[0] + radius * np.sin(t))  # x position (using sine for left-right motion)
+        y = int(center[1] + radius * np.sin(2 * t) / 2)  # y position (using double frequency for up-down motion)
+        path.append((x, y))
+    return path
 
 # Function to draw the predefined path
 def draw_path(image, path, touched_points):
@@ -51,12 +54,12 @@ while True:
     center = (width // 2, height // 2)
 
     # Define the radius dynamically based on the smaller dimension of the screen
-    max_radius = min(width, height) // 3  # Reduce a bit to leave space
+    max_radius = min(width, height) // 4  # Adjust for infinity shape
 
     if not predefined_paths:
-        # Generate a circle path with many points (more points = smoother line)
-        num_points = 200  # Increase the number of points to make it look like a continuous line
-        predefined_paths.append(generate_detailed_circle_path(num_points, max_radius, center))
+        # Generate an infinity-shaped path
+        num_points = 200  # Higher number of points for smooth shape
+        predefined_paths.append(generate_infinity_path(num_points, max_radius, center))
         touched_points.append([False] * num_points)
 
     results_hands = hands.process(image_rgb)
@@ -71,7 +74,7 @@ while True:
             finger_y = int(index_finger_tip.y * image.shape[0])
 
             # Draw the finger position
-            cv2.circle(image, (finger_x, finger_y), 10, (0, 0, 255), -1)
+            cv2.circle(image, (finger_x, finger_y), 30, (0, 0, 255), -1)
 
             # Check if finger is near predefined path (simple distance check)
             for i, path_point in enumerate(predefined_paths[current_path]):
@@ -89,7 +92,7 @@ while True:
     if all(touched_points[current_path]):
         break
 
-    cv2.imshow("Air Drawing", image)
+    cv2.imshow("Air Drawing - Infinity Shape", image)
 
     key = cv2.waitKey(5) & 0xFF
     if key == 27:  # Press 'Esc' to exit
