@@ -8,7 +8,7 @@ def run_circle():
     try:
         # Run the script and capture the output
         result = subprocess.run(
-            ['python3', 'stretch/circle.py'],
+            ['python3', 'stretch/arm/circle.py'],
             check=True,
             capture_output=True,  # Capture stdout and stderr
             text=True  # Return output as string instead of bytes
@@ -29,7 +29,7 @@ def run_loop():
     try:
         # Run the script and capture the output
         result = subprocess.run(
-            ['python3', 'stretch/loop.py'],
+            ['python3', 'stretch/arm/loop.py'],
             check=True,
             capture_output=True,  # Capture stdout and stderr
             text=True  # Return output as string instead of bytes
@@ -50,7 +50,7 @@ def run_wave():
     try:
         # Run the script and capture the output
         result = subprocess.run(
-            ['python3', 'stretch/wave.py'],
+            ['python3', 'stretch/arm/wave.py'],
             check=True,
             capture_output=True,  # Capture stdout and stderr
             text=True  # Return output as string instead of bytes

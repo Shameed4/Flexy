@@ -7,12 +7,14 @@ import numpy as np
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(max_num_hands=1)
 
-# Function to generate a wave-shaped path with multiple waves
-def generate_wave_path(num_points, amplitude, wavelength, center, num_waves):
+# Function to generate an infinity shape (proper figure-eight)
+def generate_infinity_path(num_points, radius, center):
     path = []
+    # Loop through the total number of points
     for i in range(num_points):
-        x = int(center[0] + (i - num_points // 2) * (wavelength / num_points))  # Horizontal linear movement
-        y = int(center[1] + amplitude * np.sin(2 * np.pi * num_waves * i / num_points))  # Multiple vertical waves
+        t = (i / num_points) * 2 * np.pi  # Normalize the step to go around the figure eight
+        x = int(center[0] + radius * np.sin(t))  # x position (using sine for left-right motion)
+        y = int(center[1] + radius * np.sin(2 * t) / 2)  # y position (using double frequency for up-down motion)
         path.append((x, y))
     return path
 
@@ -30,17 +32,43 @@ def draw_path(image, path, touched_points, start_gap, end_gap):
             color = (0, 255, 255) if touched_points[i] else (0, 0, 0)  # Yellow when touched, black when not
         cv2.circle(image, point, 10, color, -1)  # Small circles for the path
 
+# Function to add the banner from an existing image with aspect ratio preservation
+def add_banner_from_image(image, banner_image):
+    # Get the width of the frame
+    frame_width = image.shape[1]
+
+    # Resize the banner while maintaining aspect ratio
+    banner_aspect_ratio = banner_image.shape[1] / banner_image.shape[0]
+    new_banner_width = frame_width
+    new_banner_height = int(frame_width / banner_aspect_ratio)
+
+    # Resize the banner to fit the width of the frame
+    banner_resized = cv2.resize(banner_image, (new_banner_width, new_banner_height))
+
+    # Add padding if the resized banner height is less than the expected banner height
+    expected_banner_height = 400  # Expected banner height
+    if banner_resized.shape[0] < expected_banner_height:
+        padding = np.zeros((expected_banner_height - banner_resized.shape[0], new_banner_width, 3), dtype=np.uint8)
+        banner_resized = np.vstack((banner_resized, padding))
+
+    # Concatenate the banner with the image vertically
+    full_image = np.vstack((banner_resized, image))
+    return full_image
+
+# Load the existing banner image (adjust the path to your banner image)
+banner_image = cv2.imread('ArthritEase.png')
+
 cap = cv2.VideoCapture(1)  # Change to the appropriate camera index
 
 # Initialize variables
 current_path = 0  # Index of the current path
 predefined_paths = []  # List to hold all predefined paths
 touched_points = []  # List to hold touched status for each path
+last_n_circles = 4  # Number of circles at the end that must be touched before quitting
 
 # Gap settings for start and end
 start_gap = 7  # Number of points at the start that will be skipped (indicating the gap)
 end_gap = 7    # Number of points at the end that will be skipped (indicating the gap)
-num_ending_circles = 5  # Number of ending circles we care about
 
 while True:
     success, image = cap.read()
@@ -52,17 +80,17 @@ while True:
 
     # Get the dimensions of the frame
     height, width, _ = image.shape
-    center = (width // 2, height // 2)
+    banner_height = 150  # Adjust this based on the banner's height
+    working_height = height - banner_height  # Adjust for banner space
+    center = (width // 2, banner_height + working_height // 2 - 50)  # Move center up by 50 pixels
 
-    # Define wave parameters
-    amplitude = height // 4  # Vertical height of the wave
-    wavelength = width // 2  # Horizontal stretch of the wave
-    num_points = 200  # Higher number of points for smooth wave shape
-    num_waves = 3  # Number of complete waves
+    # Define the radius dynamically based on the smaller dimension of the screen
+    max_radius = min(width, working_height) // 3  # Increased radius for a larger shape
 
     if not predefined_paths:
-        # Generate a wave-shaped path with multiple waves
-        predefined_paths.append(generate_wave_path(num_points, amplitude, wavelength, center, num_waves))
+        # Generate an infinity-shaped path
+        num_points = 200  # Higher number of points for smooth shape
+        predefined_paths.append(generate_infinity_path(num_points, max_radius, center))
         touched_points.append([False] * num_points)
 
     results_hands = hands.process(image_rgb)
@@ -80,29 +108,32 @@ while True:
 
             # Check if finger is near predefined path (simple distance check)
             for i, path_point in enumerate(predefined_paths[current_path]):
-                # Only check points between the start and end gaps
                 if start_gap <= i < len(predefined_paths[current_path]) - end_gap:
                     if not touched_points[current_path][i] and np.linalg.norm(np.array([finger_x, finger_y]) - np.array(path_point)) < 20:
                         touched_points[current_path][i] = True
 
-    # Draw the current predefined path, updating colors based on touched status
+    # Draw the current predefined path, updating colors based on touched status and start/end gaps
     draw_path(image, predefined_paths[current_path], touched_points[current_path], start_gap, end_gap)
 
-    # Check if the last `num_ending_circles` circles have been touched
-    if all(touched_points[current_path][-num_ending_circles - end_gap:-end_gap]):
+    # Add the banner from the image at the top
+    full_image = add_banner_from_image(image, banner_image)
+
+    # Check if the last 'n' circles have been touched
+    if all(touched_points[current_path][-last_n_circles - end_gap:-end_gap]):
         # Calculate the percentage of circles touched
         total_circles = len(touched_points[current_path]) - start_gap - end_gap
-        touched_circles = sum(touched_points[current_path][start_gap:len(touched_points[current_path]) - end_gap])
+        touched_circles = sum(touched_points[current_path][start_gap:-end_gap])
         percentage_touched = (touched_circles / total_circles) * 100
 
-        # Show the percentage of touched circles and exit
+        # Show the percentage of touched circles
         print(f"Percentage of circles touched: {percentage_touched:.2f}%")
         break
 
-    cv2.imshow("Air Drawing - Multiple Waves", image)
+    # Display the image with the banner
+    cv2.imshow("Air Drawing - Infinity Shape", full_image)
 
     key = cv2.waitKey(5) & 0xFF
-    if key == 27:  # Press 'Esc' to exit
+    if key == 27:  # Press 'Esc' to exit manually
         break
     elif key == ord('a'):  # Press 'a' for left (to switch to the previous path)
         current_path = (current_path - 1) % len(predefined_paths)  # Go to the previous path
