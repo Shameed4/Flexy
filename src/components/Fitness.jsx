@@ -1,187 +1,144 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
+  CardHeader,
   Box,
   Toolbar,
-  Button,
   Typography,
-  Grid,
+  Card,
+  CardContent,
   Avatar,
-  CardHeader,
+  Grid,
   Divider,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
+  CardMedia,
+  Button,
+  Link,
 } from "@mui/material";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import EditRoundedIcon from "@mui/icons-material/EditRounded";
-import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
-import axios from "axios";
 
-const fetchUserPeople = async (userId) => {
-  try {
-    const response = await axios.get(`http://127.0.0.1:5000/get_user_people/${userId}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching user people:", error);
-    throw error;
-  }
+// // Sample data
+const user = {
+  name: "Tejas Srikanth",
+  avatar: "https://via.placeholder.com/150", // Replace with actual image URL
+  description:
+    "Software Developer based in San Francisco. Passionate about technology and open-source.",
+  email: "tejas.srikanth@example.com",
+  phone: "+1-234-567-8900",
+  medicalConditions: [
+    "Alzheimer's disease - affects memory and cognitive functions.",
+    "High blood pressure - requires regular monitoring and medication.",
+    "Heart condition - needs medication and periodic check-ups.",
+    "Type II Diabetes - needs Insulin",
+    "See more.",
+  ],
 };
 
+const exerciseData = [
+  {
+    title: "Wrist",
+    image: `${process.env.PUBLIC_URL}/hand.webp`,
+    description:
+      "A relaxing vacation on the beautiful beaches of Bali, enjoying the sun and surf.",
+  },
+  {
+    title: "Neck",
+    image: `${process.env.PUBLIC_URL}/neck.webp`,
+    description:
+      "A relaxing vacation on the beautiful beaches of Bali, enjoying the sun and surf.",
+  },
+  {
+    title: "Shoulder",
+    image: `${process.env.PUBLIC_URL}/shoulder.webp`,
+    description:
+      "A relaxing vacation on the beautiful beaches of Bali, enjoying the sun and surf.",
+  },
+];
+
+
 const Fitness = () => {
-  const [peopleData, setPeopleData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [open, setOpen] = useState(false);
-  const [currentPerson, setCurrentPerson] = useState(null);
-
-  const updatePeopleData = () => {
-    setLoading(true);
-    fetchUserPeople(273) // Replace with actual user ID
-      .then(data => {
-        console.log(data);
-        setPeopleData(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err);
-        setLoading(false);
-      });
-  };
-
-  useEffect(() => {
-    updatePeopleData();
-  }, []);
-
-  const handleOpen = (person) => {
-    setCurrentPerson(person);
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-    setCurrentPerson(null);
-  };
-
-  const handleChange = (field, value) => {
-    setCurrentPerson({ ...currentPerson, [field]: value });
-  };
-
-  const handleSave = () => {
-    // Here you would typically send an API request to update the person
-    // For now, we'll just update the local state
-    const updatedData = peopleData.map(person => 
-      person.person_id === currentPerson.person_id ? currentPerson : person
-    );
-    setPeopleData(updatedData);
-    handleClose();
-  };
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error loading relationships: {error.message}</div>;
-
   return (
-    <Box component="main" sx={{ flexGrow: 1, mr: "240px" }}>
-      <Toolbar />
-      <Button
-        variant="outlined"
-        sx={{
-          position: "absolute",
-          top: "70px",
-          right: "0px",
-          mt: 4,
-          p: 4,
-          mx: 4,
-          borderColor: "#9c9998",
-          borderWidth: "2px",
-          color: "#9c9998",
-          fontWeight: "bold",
-          textTransform: "none",
-          width: "10px",
-          height: "10px",
-        }}
-        disableElevation
-        onClick={updatePeopleData}
-        size="medium"
-      >
-        <RefreshRoundedIcon />
-      </Button>
+    <Box
+      component="main"
+      sx={{ flexGrow: 1, bgcolor: "background.default", mr: "10px", p: 3 }}
+    >
+      
+      <Typography variant="h4" sx={{ my: 4, fontWeight: "bold" }} gutterBottom>
+        Fitness
+      </Typography>
+      <Typography variant="h6" sx={{ my: 4, fontWeight: "light" }} gutterBottom>
+        Choose a workout to learn.
+      </Typography>
       <Grid container spacing={4}>
-        {peopleData.map((person) => (
-          <Grid item xs={12} key={person.person_id}>
-            <Card variant="outlined">
-              <CardHeader
-                avatar={
-                  <Avatar
-                    alt={person.name}
-                    src={person.picture ? `data:image/jpeg;base64,${person.picture}` : undefined}
-                  />
-                }
-                action={
-                  <IconButton
-                    aria-label="edit"
-                    onClick={() => handleOpen(person)}
-                  >
-                    <EditRoundedIcon />
-                  </IconButton>
-                }
-                title={person.name}
-                titleTypographyProps={{ variant: "h4", component: "div" }}
-                subheader={person.relationship}
-                subheaderTypographyProps={{
-                  variant: "subtitle1",
-                  color: "text.secondary",
-                }}
-                sx={{ paddingBottom: 0 }}
+        {exerciseData.slice(0, 3).map((memory, index) => (
+          <Grid item xs={12} sm={11} md={4} key={index}>
+            <Card 
+              variant="outlined"
+              sx={{
+                maxWidth: "600px",
+              }}
+              >
+              <CardMedia
+                component="img"
+                fullHeight
+                fullWidth
+                image={memory.image}
+                alt={memory.title}
               />
               <CardContent>
-                <Divider />
-                <Typography variant="body2" sx={{ mt: 2 }}>
-                  {person.description}
+                <Typography variant="h6" component="div">
+                  {memory.title}
                 </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {memory.description}
+                </Typography>
+                <Button
+                  variant="outlined"
+                  style={{marginTop: "5px"}}
+                  sx={{
+                    p: 1,
+                    borderColor: "#fcd34d",
+                    borderWidth: "2px",
+                    color: "#000000",
+                    fontWeight: "bold",
+                    textTransform: "none",
+                    "&:hover": {
+                      backgroundColor: "#fcd34d",
+                    },
+                  }}
+                  disableElevation
+                  component={Link}
+                  to="/#0"
+                  size="medium"
+                >
+                  Start
+                </Button>
               </CardContent>
             </Card>
           </Grid>
         ))}
       </Grid>
 
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Edit Person</DialogTitle>
-        <DialogContent>
-          <TextField
-            margin="dense"
-            label="Name"
-            fullWidth
-            value={currentPerson?.name || ""}
-            onChange={(e) => handleChange("name", e.target.value)}
-          />
-          <TextField
-            margin="dense"
-            label="Relationship"
-            fullWidth
-            value={currentPerson?.relationship || ""}
-            onChange={(e) => handleChange("relationship", e.target.value)}
-          />
-          <TextField
-            margin="dense"
-            label="Description"
-            fullWidth
-            multiline
-            rows={4}
-            value={currentPerson?.description || ""}
-            onChange={(e) => handleChange("description", e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSave} color="primary">
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <Box sx={{ mt: 2 }}>
+        <Button
+          variant="outlined"
+          fullWidth
+          sx={{
+            p: 1,
+            borderColor: "#fcd34d",
+            borderWidth: "2px",
+            color: "#000000",
+            fontWeight: "bold",
+            textTransform: "none",
+            "&:hover": {
+              backgroundColor: "#fcd34d",
+            },
+          }}
+          disableElevation
+          component={Link}
+          to="/dashboard"
+          size="medium"
+        >
+          View more memories
+        </Button>
+      </Box>
     </Box>
   );
 };

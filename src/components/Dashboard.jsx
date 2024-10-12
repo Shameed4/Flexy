@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Searchbar from "./Searchbar";
 import Sidebar from "./Sidebar";
 import Profile from "./Profile";
-import Injuries from "./Injuries";
+import Stats from "./Stats";
 import Fitness from "./Fitness";
 import ChatApp from "./ChatApp";
 import { Box } from "@mui/material";
@@ -76,8 +76,8 @@ const Dashboard = () => {
       >
         {mainArea == "Stretches" || mainArea == "" ? ( // physical therapy
           <Profile />
-        ) : mainArea == "Injuries" ? ( //other workout reccomendations
-          <Injuries />
+        ) : mainArea == "Stats" ? ( //other workout reccomendations
+          <Stats />
         ) : mainArea == "Fitness" ? ( //exercises (sean)
           <Fitness
             peopleData={peopleData}

@@ -68,7 +68,10 @@ const Profile = () => {
     >
       
       <Typography variant="h4" sx={{ my: 4, fontWeight: "bold" }} gutterBottom>
-        Exercises
+        Stretches
+      </Typography>
+      <Typography variant="h6" sx={{ my: 4, fontWeight: "light" }} gutterBottom>
+        Choose an area of the body to stretch.
       </Typography>
       <Grid container spacing={4}>
         {exerciseData.slice(0, 3).map((memory, index) => (
