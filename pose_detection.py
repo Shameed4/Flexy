@@ -4,7 +4,19 @@ import mediapipe as mp
 import math
 import time
 import json
+import sys
+import os
 
+print_feedback = False
+loop_saving = False
+extra_directory = ""
+downloaded_count = 0
+if len(sys.argv) > 1:
+    extra_directory = sys.argv[1]
+working_directory = f"./poses/{extra_directory}"
+if not os.path.exists(working_directory):
+    os.makedirs(working_directory)
+    
 # Initialize MediaPipe Pose
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5)
@@ -80,11 +92,19 @@ def calculate_direction_similarity(start, end, current_pose, saved_pose, feedbac
 def calculate_total_similarity(current_pose, saved_pose):
     feedback = []
     direction_scores = [calculate_direction_similarity(start, end, current_pose, saved_pose, feedback) for start, end in connections]
-    if feedback:
+    if print_feedback:
         print(feedback)
     # Combine scores (you may want to adjust the weights)
     total_score = sum(direction_scores)
     return total_score
+
+def download_saved_pose():
+    print("Downloading saved pose")
+    global downloaded_count
+    cv2.imwrite(f"{working_directory}/pose_{downloaded_count}.png", saved_image_s)  # Save the current frame as an image
+    with open(f"{working_directory}/pose_{downloaded_count}.json", "w") as f:
+        json.dump({"coordinates": saved_pose_s, "connections": connections}, f, indent=2, separators=(", ", ": "))
+    downloaded_count += 1
 
 # Start video capture
 cap = cv2.VideoCapture(0)
@@ -97,6 +117,28 @@ while cap.isOpened():
 
     # Process the image and get pose landmarks
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    
+    # If timer for 's' key started, check if countdown duration has passed
+    if save_timer_s and (time.time() - save_timer_s >= countdown_duration):
+        # Capture and save the pose
+        saved_pose_s = current_pose.copy()
+        saved_image_s = frame
+        print("Pose 's' saved.")
+        if loop_saving:
+            save_timer_s = time.time()
+            download_saved_pose()
+        else:        
+            save_timer_s = None  # Reset timer after saving
+
+    # If timer for 'r' key started, check if countdown duration has passed
+    if save_timer_r and (time.time() - save_timer_r >= countdown_duration):
+        # Capture and save the pose
+        saved_pose_r = current_pose.copy()
+        saved_image_r = frame
+        print("Pose 'r' saved.")
+        save_timer_r = None  # Reset timer after saving
+    
+    
     results = pose.process(frame_rgb)
     current_pose = {}
 
@@ -124,7 +166,7 @@ while cap.isOpened():
     key = cv2.waitKey(1) & 0xFF
     if key == ord('s'):
         save_timer_s = time.time()  # Set the start time for 's' countdown
-        print("Get ready! Saving pose in 2 seconds...")
+        print(f"Get ready! Saving pose in {countdown_duration} seconds...")
 
     # Check for the 'r' key to start the timer for the second saved pose
     if key == ord('r'):
@@ -132,28 +174,21 @@ while cap.isOpened():
         print("Get ready! Saving pose in 2 seconds...")
     
     if key == ord('d'):
-        cv2.imwrite("saved_pose_s.png", frame)  # Save the current frame as an image
-        with open("saved_pose_s.json", "w") as f:
-            json.dump(saved_pose_s, f)
-        
-        
-        
-
-    # If timer for 's' key started, check if countdown duration has passed
-    if save_timer_s and (time.time() - save_timer_s >= countdown_duration):
-        # Capture and save the pose
-        saved_pose_s = current_pose.copy()
-        print("Pose 's' saved.")
-        cv2.imwrite("saved_pose_s.png", frame)  # Save the current frame as an image
-        save_timer_s = None  # Reset timer after saving
-
-    # If timer for 'r' key started, check if countdown duration has passed
-    if save_timer_r and (time.time() - save_timer_r >= countdown_duration):
-        # Capture and save the pose
-        saved_pose_r = current_pose.copy()
-        print("Pose 'r' saved.")
-        cv2.imwrite("saved_pose_r.png", frame)  # Save the current frame as an image
-        save_timer_r = None  # Reset timer after saving
+        download_saved_pose()
+    
+    if key == ord('l'):
+        loop_saving = not loop_saving
+        if loop_saving:
+            print("Looping saving and downloading")
+        else:
+            print("Disabled looping saving and downloading")
+    
+    if key == ord('f'):
+        print_feedback = not print_feedback
+        if print_feedback:
+            print("Printing feedback")
+        else:
+            print("Not printing feedback")
 
     # If saved poses exist, calculate and display similarity
     similarity_score_s = None
