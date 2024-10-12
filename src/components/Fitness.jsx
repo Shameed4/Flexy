@@ -31,7 +31,7 @@ const fetchUserPeople = async (userId) => {
   }
 };
 
-const Relationships = () => {
+const Fitness = () => {
   const [peopleData, setPeopleData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -186,4 +186,4 @@ const Relationships = () => {
   );
 };
 
-export default Relationships;
+export default Fitness;

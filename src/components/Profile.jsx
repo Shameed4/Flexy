@@ -77,12 +77,12 @@ const Profile = () => {
               variant="outlined"
               sx={{
                 maxWidth: "600px",
-                mx: "auto",
               }}
               >
               <CardMedia
                 component="img"
-                height="200"
+                fullHeight
+                fullWidth
                 image={memory.image}
                 alt={memory.title}
               />

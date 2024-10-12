@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import Searchbar from "./Searchbar";
 import Sidebar from "./Sidebar";
 import Profile from "./Profile";
-import MemoriesApp from "./Memories";
-import Relationships from "./Relationships";
+import Injuries from "./Injuries";
+import Fitness from "./Fitness";
 import ChatApp from "./ChatApp";
 import { Box } from "@mui/material";
 
@@ -74,12 +74,12 @@ const Dashboard = () => {
         component="main"
         sx={{ flexGrow: 1, bgcolor: "background.default", p: 3 }}
       >
-        {mainArea == "Profile" || mainArea == "" ? (
+        {mainArea == "Stretches" || mainArea == "" ? ( // physical therapy
           <Profile />
-        ) : mainArea == "Memories" ? (
-          <MemoriesApp />
-        ) : mainArea == "Relationships" ? (
-          <Relationships
+        ) : mainArea == "Injuries" ? ( //other workout reccomendations
+          <Injuries />
+        ) : mainArea == "Fitness" ? ( //exercises (sean)
+          <Fitness
             peopleData={peopleData}
             setPeopleData={setPeopleData}
           />

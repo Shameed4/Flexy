@@ -21,7 +21,7 @@ const fetchUserMemories = async (userId) => {
   }
 };
 
-const Memories = () => {
+const Injuries = () => {
   const [memories, setMemories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -74,4 +74,4 @@ const Memories = () => {
   );
 };
 
-export default Memories;
+export default Injuries;
