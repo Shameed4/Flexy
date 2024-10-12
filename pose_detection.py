@@ -74,7 +74,8 @@ def calculate_direction_similarity(current_pose, saved_pose):
 
 # Function to calculate total similarity
 def calculate_total_similarity(current_pose, saved_pose):
-    position_score = calculate_position_similarity(current_pose, saved_pose)
+    position_score = 0
+    # position_score = calculate_position_similarity(current_pose, saved_pose)
     direction_score = calculate_direction_similarity(current_pose, saved_pose)
 
     # Combine scores (you may want to adjust the weights)
@@ -129,8 +130,6 @@ while cap.isOpened():
         cv2.imwrite("saved_pose.png", frame)  # Save the current frame as an image
         saved_image = cv2.imread("saved_pose.png")  # Read the saved image
         cv2.imshow("Saved Pose", saved_image)  # Display the saved image
-        cv2.waitKey(3000)  # Keep the saved image window open for 3 seconds
-        cv2.destroyWindow("Saved Pose")  # Close the saved image window
         save_timer = None  # Reset timer after saving
 
     # If a saved pose exists, calculate and display similarity
