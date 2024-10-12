@@ -126,7 +126,7 @@ while True:
         percentage_touched = (touched_circles / total_circles) * 100
 
         # Show the percentage of touched circles
-        print(f"Percentage of circles touched: {percentage_touched:.2f}%")
+        print(f"{percentage_touched:.2f}")
         break
 
     # Display the image with the banner
@@ -144,4 +144,3 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
-print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
