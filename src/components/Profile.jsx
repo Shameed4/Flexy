@@ -4,7 +4,7 @@ import { Box, Typography, Grid, Card, CardContent, CardMedia, Button, Rating } f
 const exerciseData = [
   {
     title: "Wrist",
-    image: `${process.env.PUBLIC_URL}/hand.webp`,
+    image: `${process.env.PUBLIC_URL}/wrist.webp`,
     description: "Exercise to improve wrist mobility and increase flexibility.",
   },
   {
@@ -242,13 +242,10 @@ const Profile = () => {
         {exerciseData.map((memory, index) => (
           <Grid item xs={12} sm={11} md={4} key={index}>
             <Card variant="outlined" sx={{ maxWidth: "600px" }}>
-              <CardMedia
+            <CardMedia
                 component="img"
-                sx={{
-                  height: "350px",
-                  width: "100%",
-                  objectFit: "cover",
-                }}
+                fullHeight
+                fullWidth
                 image={memory.image}
                 alt={memory.title}
               />
