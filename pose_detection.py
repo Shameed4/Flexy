@@ -3,6 +3,7 @@ import numpy as np
 import mediapipe as mp
 import math
 import time
+import json
 
 # Initialize MediaPipe Pose
 mp_pose = mp.solutions.pose
@@ -51,42 +52,38 @@ def calculate_angle(v1, v2):
     angle = math.acos(np.clip(cos_angle, -1.0, 1.0))  # Clamp to avoid floating point errors
     return angle
 
-# Function to calculate position similarity
-def calculate_position_similarity(current_pose, saved_pose):
-    position_score = 0
-    for name in landmarks_of_interest.keys():
-        if name in current_pose and name in saved_pose:
-            curr_coord = current_pose[name]
-            saved_coord = saved_pose[name]
-            dist = np.linalg.norm(np.array([curr_coord['x'], curr_coord['y']]) -
-                                  np.array([saved_coord['x'], saved_coord['y']]))
-            position_score += dist
-    return position_score
-
 # Function to calculate direction similarity
-def calculate_direction_similarity(current_pose, saved_pose):
-    total_angle_difference = 0
-    for (start, end) in connections:
-        if start in current_pose and start in saved_pose and end in current_pose and end in saved_pose:
-            curr_start = current_pose[start]
-            curr_end = current_pose[end]
-            saved_start = saved_pose[start]
-            saved_end = saved_pose[end]
+def calculate_direction_similarity(start, end, current_pose, saved_pose, feedback):
+    if start not in current_pose:
+        feedback.append(f"{start} not detected")
+        return 10
+    if end not in current_pose:
+        feedback.append(f"{end} not detected")
+        return 10
+    
+    curr_start = current_pose[start]
+    curr_end = current_pose[end]
+    saved_start = saved_pose[start] 
+    saved_end = saved_pose[end]
 
-            curr_vector = np.array([curr_end['x'] - curr_start['x'], curr_end['y'] - curr_start['y']])
-            saved_vector = np.array([saved_end['x'] - saved_start['x'], saved_end['y'] - saved_start['y']])
-            angle_diff = calculate_angle(curr_vector, saved_vector)
-            total_angle_difference += angle_diff
+    curr_vector = np.array([curr_end['x'] - curr_start['x'], curr_end['y'] - curr_start['y']])
+    saved_vector = np.array([saved_end['x'] - saved_start['x'], saved_end['y'] - saved_start['y']])
+    angle_diff = calculate_angle(curr_vector, saved_vector)
 
-    return total_angle_difference
+    if angle_diff > 0.5:
+        feedback.append(f"Angle difference is high between {start} and {end}")
+        
+    
+    return angle_diff
 
 # Function to calculate total similarity
 def calculate_total_similarity(current_pose, saved_pose):
-    position_score = calculate_position_similarity(current_pose, saved_pose)
-    direction_score = calculate_direction_similarity(current_pose, saved_pose)
-
+    feedback = []
+    direction_scores = [calculate_direction_similarity(start, end, current_pose, saved_pose, feedback) for start, end in connections]
+    if feedback:
+        print(feedback)
     # Combine scores (you may want to adjust the weights)
-    total_score = position_score + direction_score
+    total_score = sum(direction_scores)
     return total_score
 
 # Start video capture
@@ -133,6 +130,14 @@ while cap.isOpened():
     if key == ord('r'):
         save_timer_r = time.time()  # Set the start time for 'r' countdown
         print("Get ready! Saving pose in 2 seconds...")
+    
+    if key == ord('d'):
+        cv2.imwrite("saved_pose_s.png", frame)  # Save the current frame as an image
+        with open("saved_pose_s.json", "w") as f:
+            json.dump(saved_pose_s, f)
+        
+        
+        
 
     # If timer for 's' key started, check if countdown duration has passed
     if save_timer_s and (time.time() - save_timer_s >= countdown_duration):
