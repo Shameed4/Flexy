@@ -74,10 +74,10 @@ const Dashboard = () => {
         component="main"
         sx={{ flexGrow: 1, bgcolor: "background.default", p: 3 }}
       >
-        {mainArea == "Stretches" || mainArea == "" ? ( // physical therapy
-          <Profile />
-        ) : mainArea == "Stats" ? ( //other workout reccomendations
+        {mainArea == "Stats" || mainArea == "" ? ( // physical therapy
           <Stats />
+        ) : mainArea == "Stretches" ? ( //other workout reccomendations
+          <Profile />
         ) : mainArea == "Fitness" ? ( //exercises (sean)
           <Fitness
             peopleData={peopleData}

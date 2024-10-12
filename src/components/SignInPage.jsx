@@ -81,7 +81,7 @@ const SignInPage = () => {
               <Button
                 fullWidth
                 variant="contained"
-                style={{backgroundColor: "#fcd34d"}}
+                style={{backgroundColor: "#fcd34d", color: "#713f12"}}
                 sx={{ textTransform: "none", fontWeight: "bold", mt: 2 }}
               >
                 Sign In
@@ -89,7 +89,7 @@ const SignInPage = () => {
               <Button
                 fullWidth
                 variant="contained"
-                style={{backgroundColor: "#fcd34d"}}
+                style={{backgroundColor: "#fcd34d", color: "#713f12"}}
                 sx={{ textTransform: "none", fontWeight: "bold", mt: 2 }}
                 onClick={() => setCameraApproved(!cameraApproved)}
               >
@@ -134,9 +134,11 @@ const SignInPage = () => {
               <div className="btn-container" style={{ marginTop: "10px" }}>
                 <Button
                   variant="contained"
+                  style={{backgroundColor: "#fcd34d", color: "#713f12"}}
                   color="primary"
                   onClick={capture}
-                  sx={{ textTransform: "none" }}
+
+                  sx={{ textTransform: "none", fontWeight: "bold" }}
                 >
                   Capture photo
                 </Button>

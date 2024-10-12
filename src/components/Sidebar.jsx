@@ -47,7 +47,7 @@ const Sidebar = ({ setMainArea }) => {
         }}
       >
         <List>
-          {["Stretches", "Stats", "Fitness", "ChatBot"].map(
+          {["Stats", "Stretches", "Fitness", "ChatBot"].map(
             (text, index) => (
               <ListItem
                 key={text}
