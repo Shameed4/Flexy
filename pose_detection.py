@@ -227,8 +227,7 @@ while cap.isOpened():
                 json.dump(saved_poses, f)
             print(f"Saved poses to {saved_poses_file}")
 
-    min_pose_index = None
-    is_pose_correct = False
+    
 
     # If saved poses exist, calculate and display similarity
     similarity_scores = {}
