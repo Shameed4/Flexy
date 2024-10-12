@@ -3,8 +3,6 @@ import numpy as np
 import mediapipe as mp
 import math
 import time
-import json
-import os
 
 # Initialize MediaPipe Pose
 mp_pose = mp.solutions.pose
@@ -35,9 +33,9 @@ connections = [
 saved_poses = {}
 save_timers = {}
 countdown_duration = 2  # 2-second delay for pose save
+pose_count = 3  # Initial number of poses
 reps_completed = 0  # Count of completed reps
-sequence_index = 0  # Index in the expected sequence
-expected_sequence = ['1', '2', '3']  # Default expected sequence (can be extended up to '9')
+transition_state = 0  # 0: no transition, 1: 1 to 2, 2: 2 to 3
 
 # Variables for pose holding and points
 pose_hold_start_time = None
@@ -45,14 +43,6 @@ is_in_pose = False
 pose_hold_duration = 0
 pose_hold_threshold = 5  # seconds
 points = 0
-feedback_threshold = 0.5  # Threshold for generating feedback
-
-# Load saved poses from JSON file if it exists
-saved_poses_file = 'saved_poses.json'
-if os.path.exists(saved_poses_file):
-    with open(saved_poses_file, 'r') as f:
-        saved_poses = json.load(f)
-    print(f"Loaded saved poses from {saved_poses_file}")
 
 # Function to calculate angle between two vectors
 def calculate_angle(v1, v2):
@@ -63,17 +53,9 @@ def calculate_angle(v1, v2):
     angle = math.acos(np.clip(cos_angle, -1.0, 1.0))  # Clamp to avoid floating point errors
     return angle
 
-# Function to calculate joint angle at point b formed by points a, b, c
-def calculate_joint_angle(a, b, c):
-    ba = np.array([a['x'] - b['x'], a['y'] - b['y']])
-    bc = np.array([c['x'] - b['x'], c['y'] - b['y']])
-    angle = calculate_angle(ba, bc)
-    return angle
-
 # Function to calculate position similarity
 def calculate_position_similarity(current_pose, saved_pose):
     position_score = 0
-    count = 0
     for name in landmarks_of_interest.keys():
         if name in current_pose and name in saved_pose:
             curr_coord = current_pose[name]
@@ -81,15 +63,11 @@ def calculate_position_similarity(current_pose, saved_pose):
             dist = np.linalg.norm(np.array([curr_coord['x'], curr_coord['y']]) -
                                   np.array([saved_coord['x'], saved_coord['y']]))
             position_score += dist
-            count += 1
-    if count > 0:
-        position_score /= count  # Average distance per landmark
     return position_score
 
 # Function to calculate direction similarity
 def calculate_direction_similarity(current_pose, saved_pose):
     total_angle_difference = 0
-    count = 0
     for (start, end) in connections:
         if start in current_pose and start in saved_pose and end in current_pose and end in saved_pose:
             curr_start = current_pose[start]
@@ -99,37 +77,18 @@ def calculate_direction_similarity(current_pose, saved_pose):
 
             curr_vector = np.array([curr_end['x'] - curr_start['x'], curr_end['y'] - curr_start['y']])
             saved_vector = np.array([saved_end['x'] - saved_start['x'], saved_end['y'] - saved_start['y']])
-            angle_diff = calculate_angle(curr_vector, saved_vector) / math.pi  # Normalize angle difference
+            angle_diff = calculate_angle(curr_vector, saved_vector)
             total_angle_difference += angle_diff
-            count += 1
 
-    if count > 0:
-        total_angle_difference /= count  # Average normalized angle difference per connection
     return total_angle_difference
 
 # Function to calculate total similarity
 def calculate_total_similarity(current_pose, saved_pose):
-    # Compute a scaling factor, e.g., the distance between shoulders in the saved pose
-    if 'left_shoulder' in saved_pose and 'right_shoulder' in saved_pose:
-        saved_scale = np.linalg.norm(np.array([saved_pose['left_shoulder']['x'], saved_pose['left_shoulder']['y']]) -
-                                     np.array([saved_pose['right_shoulder']['x'], saved_pose['right_shoulder']['y']]))
-    else:
-        saved_scale = 1  # Default to 1 if not available
-
-    # Similarly for current pose
-    if 'left_shoulder' in current_pose and 'right_shoulder' in current_pose:
-        current_scale = np.linalg.norm(np.array([current_pose['left_shoulder']['x'], current_pose['left_shoulder']['y']]) -
-                                       np.array([current_pose['right_shoulder']['x'], current_pose['right_shoulder']['y']]))
-    else:
-        current_scale = 1  # Default to 1 if not available
-
-    scale = (saved_scale + current_scale) / 2  # Average scale
-
-    position_score = calculate_position_similarity(current_pose, saved_pose) / scale
+    position_score = calculate_position_similarity(current_pose, saved_pose)
     direction_score = calculate_direction_similarity(current_pose, saved_pose)
 
-    # Combine scores with weights (adjust weights as needed)
-    total_score = 0.4 * position_score + 0.6 * direction_score
+    # Combine scores (you may want to adjust the weights)
+    total_score = position_score + direction_score
     return total_score
 
 # Function to generate feedback based on pose differences
@@ -173,6 +132,13 @@ def generate_feedback(current_pose, saved_pose):
 
     return feedback
 
+# Function to calculate joint angle at point b formed by points a, b, c
+def calculate_joint_angle(a, b, c):
+    ba = np.array([a['x'] - b['x'], a['y'] - b['y']])
+    bc = np.array([c['x'] - b['x'], c['y'] - b['y']])
+    angle = calculate_angle(ba, bc)
+    return angle
+
 # Start video capture
 cap = cv2.VideoCapture(0)
 
@@ -190,7 +156,7 @@ while cap.isOpened():
     if results.pose_landmarks:
         for name, index in landmarks_of_interest.items():
             landmark = results.pose_landmarks.landmark[index]
-            current_pose[name] = {'x': float(landmark.x), 'y': float(landmark.y)}
+            current_pose[name] = {'x': landmark.x, 'y': landmark.y}
 
         # Draw landmarks and labels
         for name, coord in current_pose.items():
@@ -207,27 +173,20 @@ while cap.isOpened():
                 end_point = (int(end_coord['x'] * frame.shape[1]), int(end_coord['y'] * frame.shape[0]))
                 cv2.line(frame, start_point, end_point, (255, 0, 0), 2)  # Blue line
 
-    # Check for the '1'-'9' keys to start the timer for saved poses
+    # Check for the '1', '2', or '3' keys to start the timer for saved poses
     key = cv2.waitKey(1) & 0xFF
-    if ord('1') <= key <= ord('9'):
+    if key in (ord('1'), ord('2'), ord('3')):
         pose_index = chr(key)  # Convert ASCII to character for indexing
         save_timers[pose_index] = time.time()  # Set the start time for the pose countdown
-        print(f"Get ready! Saving pose {pose_index} in {countdown_duration} seconds...")
+        print(f"Get ready! Saving pose {pose_index} in 2 seconds...")
 
-    # If timer for a key startedgit, check if countdown duration has passed
+    # If timer for a key started, check if countdown duration has passed
     for pose_index in list(save_timers.keys()):
         if save_timers[pose_index] and (time.time() - save_timers[pose_index] >= countdown_duration):
             # Capture and save the pose
             saved_poses[pose_index] = current_pose.copy()
             print(f"Pose {pose_index} saved.")
             save_timers[pose_index] = None  # Reset timer after saving
-
-            # Save saved_poses to JSON file
-            with open(saved_poses_file, 'w') as f:
-                json.dump(saved_poses, f)
-            print(f"Saved poses to {saved_poses_file}")
-
-    
 
     # If saved poses exist, calculate and display similarity
     similarity_scores = {}
@@ -236,22 +195,16 @@ while cap.isOpened():
 
     # Determine current pose based on similarity scores
     current_pose_index = None
-    if similarity_scores:
-        # Find the pose with the minimum score
-        min_pose_index = min(similarity_scores, key=similarity_scores.get)
-        min_score = similarity_scores[min_pose_index]
-
-        # Set a threshold for considering a pose match
-        threshold = 0.5  # Adjust this threshold based on testing
-        if min_score < threshold:
-            current_pose_index = min_pose_index
-            is_pose_correct = True
-        else:
-            is_pose_correct = False
-    else:
-        is_pose_correct = False
+    for pose_index, score in similarity_scores.items():
+        if score < 1.5 and all(similarity_scores[other] > score + 0.3 for other in similarity_scores if other != pose_index):
+            current_pose_index = pose_index
+            break  # Stop once we find a valid current pose
 
     # Handle pose holding and point awarding
+    is_pose_correct = False
+    if current_pose_index is not None:
+        is_pose_correct = True
+
     if is_pose_correct:
         if not is_in_pose:
             is_in_pose = True
@@ -272,21 +225,30 @@ while cap.isOpened():
 
     # Generate feedback if not in correct pose
     feedback_messages = []
-    if not is_pose_correct and min_pose_index in saved_poses:
-        feedback_messages = generate_feedback(current_pose, saved_poses[min_pose_index])
+    if not is_pose_correct and current_pose_index is not None and current_pose_index in saved_poses:
+        feedback_messages = generate_feedback(current_pose, saved_poses[current_pose_index])
+
+    # Count transitions from position 1 to 2 to 3
+    if current_pose_index == '1':
+        transition_state = 0  # Reset state when in position 1
+    elif current_pose_index == '2' and transition_state == 0:
+        transition_state = 1  # Move to state 1 when transitioning from 1 to 2
+    elif current_pose_index == '3' and transition_state == 1:
+        reps_completed += 1  # Count a completed rep when transitioning from 2 to 3
+        transition_state = 2  # Move to state 2 to indicate a completed rep
+    elif current_pose_index == '2' and transition_state == 2:
+        transition_state = 1  # Reset to state 1 when back in position 2
 
     # Display similarity scores and current pose
     y_offset = 50
     for index, score in similarity_scores.items():
-        text = f'Pose {index}: {score:.2f}'
-        cv2.putText(frame, text, (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        cv2.putText(frame, f'Pose {index}: {score:.2f}', (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
         y_offset += 20
 
     if is_pose_correct:
-        expected_pose_text = f'Pose Matched: {current_pose_index}'
+        cv2.putText(frame, f'Pose Matched: {current_pose_index}', (10, y_offset + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
     else:
-        expected_pose_text = 'Pose Not Matched'
-    cv2.putText(frame, expected_pose_text, (10, y_offset + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 1)
+        cv2.putText(frame, 'Pose Not Matched', (10, y_offset + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 
     # Display feedback messages
     for i, msg in enumerate(feedback_messages):
@@ -297,8 +259,10 @@ while cap.isOpened():
         cv2.putText(frame, f'Hold Time: {pose_hold_duration:.1f}s', (10, y_offset + 100), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
     cv2.putText(frame, f'Points: {points}', (10, y_offset + 130), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
 
+    cv2.putText(frame, f'Reps Completed: {reps_completed}', (10, y_offset + 160), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 1)  # Show completed reps count
+
     # Show the frame with drawn landmarks and pose data
-    cv2.imshow('Exercise Assistant', frame)
+    cv2.imshow('Push-Up Counter', frame)
 
     if key == ord('q'):
         break
