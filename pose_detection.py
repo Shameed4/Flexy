@@ -214,7 +214,7 @@ while cap.isOpened():
         save_timers[pose_index] = time.time()  # Set the start time for the pose countdown
         print(f"Get ready! Saving pose {pose_index} in {countdown_duration} seconds...")
 
-    # If timer for a key started, check if countdown duration has passed
+    # If timer for a key startedgit, check if countdown duration has passed
     for pose_index in list(save_timers.keys()):
         if save_timers[pose_index] and (time.time() - save_timers[pose_index] >= countdown_duration):
             # Capture and save the pose
@@ -226,6 +226,9 @@ while cap.isOpened():
             with open(saved_poses_file, 'w') as f:
                 json.dump(saved_poses, f)
             print(f"Saved poses to {saved_poses_file}")
+
+    min_pose_index = None
+    is_pose_correct = False
 
     # If saved poses exist, calculate and display similarity
     similarity_scores = {}
