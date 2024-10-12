@@ -3,13 +3,12 @@ from flask import Flask
 
 app = Flask(__name__)
 
-
-@app.route('/run-script', methods=['GET'])
+@app.route('/', methods=['GET'])
 def run_script():
     try:
         # Run the script and capture the output
         result = subprocess.run(
-            ['python3', 'changing_circles.py'],
+            ['python3', 'stretch/circle.py'],
             check=True,
             capture_output=True,  # Capture stdout and stderr
             text=True  # Return output as string instead of bytes

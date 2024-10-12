@@ -1,5 +1,4 @@
 import time
-
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -28,37 +27,6 @@ def generate_square_path(size, center):
         (center[0] - size // 2, center[1] + size // 2)
     ]
 
-# List to hold all predefined paths and their touched statuses
-predefined_paths = []
-touched_points = []
-
-# Define paths
-predefined_paths.append(generate_circle_path(8, 200, (320, 240)))  # Circle path
-touched_points.append([False] * 8)
-
-predefined_paths.append(generate_square_path(200, (320, 240)))  # Square path
-touched_points.append([False] * 4)
-
-# Add more paths as needed
-predefined_paths.append(generate_circle_path(12, 150, (320, 240)))  # Another circle path
-touched_points.append([False] * 12)
-
-# Initialize variables
-current_path = 0  # Index of the current path
-
-# Define body part labels for all 33 landmarks
-body_part_labels = [
-    "Nose", "Left Eye", "Right Eye", "Left Ear", "Right Ear",
-    "Left Shoulder", "Right Shoulder", "Left Elbow", "Right Elbow",
-    "Left Wrist", "Right Wrist", "Left Hip", "Right Hip",
-    "Left Knee", "Right Knee", "Left Ankle", "Right Ankle",
-    "Left Pinky", "Right Pinky", "Left Ring", "Right Ring",
-    "Left Middle", "Right Middle", "Left Index", "Right Index",
-    "Left Thumb", "Right Thumb", "Left Heel", "Right Heel",
-    "Left Foot Index", "Right Foot Index", "Left Big Toe", "Right Big Toe",
-    "Left Small Toe", "Right Small Toe"
-]
-
 # Function to draw the predefined path
 def draw_path(image, path, touched_points):
     for i, point in enumerate(path):
@@ -68,14 +36,16 @@ def draw_path(image, path, touched_points):
 # Function to draw pose landmarks
 def draw_pose_landmarks(image, landmarks):
     for i, landmark in enumerate(landmarks.landmark):
-        if i < len(body_part_labels):  # Ensure we don't exceed label index
-            h, w, _ = image.shape
-            x, y = int(landmark.x * w), int(landmark.y * h)
-            cv2.circle(image, (x, y), 5, (0, 255, 0), -1)  # Draw landmark
-            # Label the landmark with the corresponding body part
-            cv2.putText(image, body_part_labels[i], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        h, w, _ = image.shape
+        x, y = int(landmark.x * w), int(landmark.y * h)
+        cv2.circle(image, (x, y), 5, (0, 255, 0), -1)
 
 cap = cv2.VideoCapture(1)  # Change to the appropriate camera index
+
+# Initialize variables
+current_path = 0  # Index of the current path
+predefined_paths = []  # List to hold all predefined paths
+touched_points = []  # List to hold touched status for each path
 
 while True:
     success, image = cap.read()
@@ -84,6 +54,25 @@ while True:
 
     image = cv2.flip(image, 1)  # Flip the image for a mirror effect
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    # Get the dimensions of the frame
+    height, width, _ = image.shape
+    center = (width // 2, height // 2)
+
+    # Define the radius dynamically based on the smaller dimension of the screen
+    max_radius = min(width, height) // 2 - 10  # A little padding to avoid going off-screen
+
+    if not predefined_paths:
+        # Define paths once based on the frame dimensions
+        predefined_paths.append(generate_circle_path(8, max_radius, center))  # Circle path
+        touched_points.append([False] * 8)
+
+        predefined_paths.append(generate_square_path(max_radius, center))  # Square path
+        touched_points.append([False] * 4)
+
+        predefined_paths.append(generate_circle_path(12, max_radius - 50, center))  # Another circle path
+        touched_points.append([False] * 12)
+
     results_hands = hands.process(image_rgb)
     results_pose = pose.process(image_rgb)
 
@@ -112,7 +101,6 @@ while True:
 
     # Check if all points in the current path have been touched
     if all(touched_points[current_path]):
-        print("All points touched! Closing application...")
         break
 
     cv2.imshow("Air Drawing", image)
@@ -129,4 +117,4 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
-print(time.time().__str__())
+print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
