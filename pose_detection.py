@@ -9,11 +9,42 @@ import os
 
 print_feedback = False
 loop_saving = False
+show_guide = False
 extra_directory = ""
 downloaded_count = 0
 if len(sys.argv) > 1:
     extra_directory = sys.argv[1]
-working_directory = f"./poses/{extra_directory}"
+    working_directory = f"./poses/{extra_directory}"
+if len(sys.argv) > 2:
+    with open(f"{sys.argv[2]}.json", "r") as f:
+        data = json.load(f)
+        saved_image_s = cv2.cvtColor(cv2.imread(f"{sys.argv[2]}.png"), cv2.COLOR_BGR2RGB)
+    landmarks_of_interest = data["landmarks"]
+    connections = data["connections"]
+    saved_pose_s = data["coordinates"]
+else:
+    # Define landmarks of interest and their connections
+    landmarks_of_interest = {
+        "left_shoulder": 11,
+        "right_shoulder": 12,
+        "left_elbow": 13,
+        "right_elbow": 14,
+        "left_wrist": 15,
+        "right_wrist": 16,
+        "left_hip": 23,
+        "right_hip": 24,
+    }
+    connections = [
+        ("left_shoulder", "left_elbow"),
+        ("left_elbow", "left_wrist"),
+        ("right_shoulder", "right_elbow"),
+        ("right_elbow", "right_wrist"),
+        ("left_shoulder", "left_hip"),
+        ("right_shoulder", "right_hip"),
+    ]
+    # Initialize dictionaries to store saved poses
+    saved_pose_s = {}
+    
 if not os.path.exists(working_directory):
     os.makedirs(working_directory)
     
@@ -21,33 +52,10 @@ if not os.path.exists(working_directory):
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5)
 
-# Define landmarks of interest and their connections
-landmarks_of_interest = {
-    "left_shoulder": 11,
-    "right_shoulder": 12,
-    "left_elbow": 13,
-    "right_elbow": 14,
-    "left_wrist": 15,
-    "right_wrist": 16,
-    "left_hip": 23,
-    "right_hip": 24,
-}
-
-connections = [
-    ("left_shoulder", "left_elbow"),
-    ("left_elbow", "left_wrist"),
-    ("right_shoulder", "right_elbow"),
-    ("right_elbow", "right_wrist"),
-    ("left_shoulder", "left_hip"),
-    ("right_shoulder", "right_hip"),
-]
-
-# Initialize dictionaries to store saved poses
-saved_pose_s = {}
 saved_pose_r = {}
 save_timer_s = None  # Timer variable for 's' key countdown
 save_timer_r = None  # Timer variable for 'r' key countdown
-countdown_duration = 2  # 2-second delay for pose save
+countdown_duration = 0.1  # 2-second delay for pose save
 
 # Initialize counters
 push_up_count = 0
@@ -103,7 +111,7 @@ def download_saved_pose():
     global downloaded_count
     cv2.imwrite(f"{working_directory}/pose_{downloaded_count}.png", saved_image_s)  # Save the current frame as an image
     with open(f"{working_directory}/pose_{downloaded_count}.json", "w") as f:
-        json.dump({"coordinates": saved_pose_s, "connections": connections}, f, indent=2, separators=(", ", ": "))
+        json.dump({"coordinates": saved_pose_s, "landmarks": landmarks_of_interest, "connections": connections}, f, indent=2, separators=(", ", ": "))
     downloaded_count += 1
 
 # Start video capture
@@ -114,6 +122,7 @@ while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
         break
+    frame = cv2.flip(frame, 1)
 
     # Process the image and get pose landmarks
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -161,6 +170,28 @@ while cap.isOpened():
                 start_point = (int(start_coord['x'] * frame.shape[1]), int(start_coord['y'] * frame.shape[0]))
                 end_point = (int(end_coord['x'] * frame.shape[1]), int(end_coord['y'] * frame.shape[0]))
                 cv2.line(frame, start_point, end_point, (255, 0, 0), 2)  # Blue line
+                
+    # Draw guide connections
+    if show_guide and saved_image_s is not None:
+        overlay = saved_image_s
+
+        # Define the transparency level for the overlay (0.0 = fully transparent, 1.0 = fully opaque)
+        alpha = 0.5
+
+        # Blend the images using the alpha value
+        frame = cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0)
+        # Draw landmarks and labels
+        for name, coord in saved_pose_s.items():
+            x, y = int(coord['x'] * frame.shape[1]), int(coord['y'] * frame.shape[0])
+            cv2.circle(frame, (x, y), 5, (0, 255, 255), -1)  # Draw the landmark
+            cv2.putText(frame, name, (x + 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)  # Draw label
+        for (start, end) in connections:
+            if start in current_pose and end in current_pose:
+                start_coord = saved_pose_s[start]
+                end_coord = saved_pose_s[end]
+                start_point = (int(start_coord['x'] * frame.shape[1]), int(start_coord['y'] * frame.shape[0]))
+                end_point = (int(end_coord['x'] * frame.shape[1]), int(end_coord['y'] * frame.shape[0]))
+                cv2.line(frame, start_point, end_point, (255, 0, 155), 2)  # Purple line
 
     # Check for the 's' key to start the timer for the first saved pose
     key = cv2.waitKey(1) & 0xFF
@@ -189,6 +220,13 @@ while cap.isOpened():
             print("Printing feedback")
         else:
             print("Not printing feedback")
+    
+    if key == ord('g'):
+        show_guide = not show_guide
+        if show_guide:
+            print("Displaying guide")
+        else:
+            print("Hiding guide")
 
     # If saved poses exist, calculate and display similarity
     similarity_score_s = None

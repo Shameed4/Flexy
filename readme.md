@@ -12,6 +12,8 @@ The counter goes up when going from the 'S' position to the 'R' position.
 ## feedback
 Save a pose using the 'S' key, and toggle feedback using the 'F' key. You should be able to see in the console if there is anything you are doing incorrectly.
 
+You can also click the 'G' key to see a guide (reference), including the pose and image. 
+
 ## data collection
 Save a pose using the 'S' key, and download it using the 'D' key. If you don't want to repeatedly press 'S' and 'D' back and forth, you can click 'L' toggle loop mode, then 'S' to start saving a pose every 2 seconds. It will save the image and coordinates of your relevant body parts in a JSON file.
 
