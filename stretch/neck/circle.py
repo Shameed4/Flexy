@@ -7,15 +7,16 @@ import numpy as np
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose()
 
-# Function to generate a circular path
-def generate_circle_path(num_points, radius, center):
+# Function to generate an oval path
+def generate_oval_path(num_points, radius_x, radius_y, center):
     path = []
     for i in range(num_points):
-        angle = (i / num_points) * 2 * np.pi  # Full circle
-        x = int(center[0] + radius * np.cos(angle))
-        y = int(center[1] + radius * np.sin(angle))
+        angle = (i / num_points) * 2 * np.pi  # Full ellipse
+        x = int(center[0] + radius_x * np.cos(angle))
+        y = int(center[1] + radius_y * np.sin(angle))
         path.append((x, y))
     return path
+
 
 # Function to draw the predefined path
 def draw_path(image, path, touched_points):
@@ -23,7 +24,7 @@ def draw_path(image, path, touched_points):
         color = (0, 0, 255) if not touched_points[i] else (0, 255, 0)
         cv2.circle(image, point, 5, color, -1)
 
-cap = cv2.VideoCapture(1)  # Change to the appropriate camera index
+cap = cv2.VideoCapture(0)  # Change to the appropriate camera index
 
 # Initialize variables
 predefined_paths = []
@@ -43,8 +44,11 @@ while True:
 
     if not predefined_paths:
         num_points = 200
-        predefined_paths.append(generate_circle_path(num_points, max_radius, center))
+        radius_x = max_radius  # Width of the oval
+        radius_y = max_radius // 2  # Height of the oval (adjust as desired)
+        predefined_paths.append(generate_oval_path(num_points, radius_x, radius_y, center))
         touched_points.append([False] * num_points)
+
 
     results_pose = pose.process(image_rgb)
 
