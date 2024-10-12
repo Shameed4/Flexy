@@ -29,10 +29,13 @@ connections = [
     ("right_shoulder", "right_hip"),
 ]
 
-# Initialize a dictionary to store the saved pose
-saved_pose = {}
-save_timer = None  # Timer variable for countdown
+# Initialize dictionaries to store saved poses
+saved_poses = {}
+save_timers = {}
 countdown_duration = 2  # 2-second delay for pose save
+pose_count = 3  # Initial number of poses
+reps_completed = 0  # Count of completed reps
+transition_state = 0  # 0: no transition, 1: 1 to 2, 2: 2 to 3
 
 # Function to calculate angle between two vectors
 def calculate_angle(v1, v2):
@@ -74,8 +77,7 @@ def calculate_direction_similarity(current_pose, saved_pose):
 
 # Function to calculate total similarity
 def calculate_total_similarity(current_pose, saved_pose):
-    position_score = 0
-    # position_score = calculate_position_similarity(current_pose, saved_pose)
+    position_score = calculate_position_similarity(current_pose, saved_pose)
     direction_score = calculate_direction_similarity(current_pose, saved_pose)
 
     # Combine scores (you may want to adjust the weights)
@@ -116,33 +118,56 @@ while cap.isOpened():
                 end_point = (int(end_coord['x'] * frame.shape[1]), int(end_coord['y'] * frame.shape[0]))
                 cv2.line(frame, start_point, end_point, (255, 0, 0), 2)  # Blue line
 
-    # Check for the 's' key to start the timer
+    # Check for the '1', '2', or '3' keys to start the timer for saved poses
     key = cv2.waitKey(1) & 0xFF
-    if key == ord('s'):
-        save_timer = time.time()  # Set the start time for countdown
-        print("Get ready! Saving pose in 2 seconds...")
+    if key in (ord('1'), ord('2'), ord('3')):
+        pose_index = chr(key)  # Convert ASCII to character for indexing
+        save_timers[pose_index] = time.time()  # Set the start time for the pose countdown
+        print(f"Get ready! Saving pose {pose_index} in 2 seconds...")
 
-    # If timer started, check if countdown duration has passed
-    if save_timer and (time.time() - save_timer >= countdown_duration):
-        # Capture and save the pose
-        saved_pose = current_pose.copy()
-        print("Pose saved.")
-        cv2.imwrite("saved_pose.png", frame)  # Save the current frame as an image
-        saved_image = cv2.imread("saved_pose.png")  # Read the saved image
-        cv2.imshow("Saved Pose", saved_image)  # Display the saved image
-        save_timer = None  # Reset timer after saving
+    # If timer for a key started, check if countdown duration has passed
+    for pose_index in save_timers.keys():
+        if save_timers[pose_index] and (time.time() - save_timers[pose_index] >= countdown_duration):
+            # Capture and save the pose
+            saved_poses[pose_index] = current_pose.copy()
+            print(f"Pose {pose_index} saved.")
+            save_timers[pose_index] = None  # Reset timer after saving
 
-    # If a saved pose exists, calculate and display similarity
-    if saved_pose:
-        similarity_score = calculate_total_similarity(current_pose, saved_pose)
-        cv2.putText(frame, f"Similarity Score: {similarity_score:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+    # If saved poses exist, calculate and display similarity
+    similarity_scores = {}
+    for pose_index, saved_pose in saved_poses.items():
+        similarity_scores[pose_index] = calculate_total_similarity(current_pose, saved_pose)
 
-    # Show the frame
-    cv2.imshow('Pose Detection', frame)
+    # Determine current pose based on similarity scores
+    current_pose_index = None
+    for pose_index, score in similarity_scores.items():
+        if score < 1.5 and all(similarity_scores[other] > score + 0.3 for other in similarity_scores if other != pose_index):
+            current_pose_index = pose_index
+            break  # Stop once we find a valid current pose
 
-    # Quit if 'q' is pressed
+    # Count transitions from position 1 to 2 to 3
+    if current_pose_index == '1':
+        transition_state = 0  # Reset state when in position 1
+    elif current_pose_index == '2' and transition_state == 0:
+        transition_state = 1  # Move to state 1 when transitioning from 1 to 2
+    elif current_pose_index == '3' and transition_state == 1:
+        reps_completed += 1  # Count a completed rep when transitioning from 2 to 3
+        transition_state = 2  # Move to state 2 to indicate a completed rep
+    elif current_pose_index == '2' and transition_state == 2:
+        transition_state = 1  # Reset to state 1 when back in position 2
+
+    # Display similarity scores and current pose
+    for index, score in similarity_scores.items():
+        cv2.putText(frame, f'Pose {index}: {score:.2f}', (10, 50 + 20 * int(index) % 3), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+
+    cv2.putText(frame, f'Reps Completed: {reps_completed}', (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 1)  # Show completed reps count
+
+    # Show the frame with drawn landmarks and pose data
+    cv2.imshow('Push-Up Counter', frame)
+
     if key == ord('q'):
         break
 
+# Release resources
 cap.release()
 cv2.destroyAllWindows()
