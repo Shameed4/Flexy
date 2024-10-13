@@ -11,34 +11,69 @@ import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import { v4 as uuidv4 } from "uuid";
 import OpenAI from "openai/index.mjs";
 
-
-const openai = new OpenAI({
-  apiKey: `${process.env.REACT_APP_OPEN_AI_API_KEY}`, dangerouslyAllowBrowser: true
-});
-
 const instructions = "You are a helpful assistant for a physical therapy / exercise app." +
   "Your job is to refer people to any of our exercises that may be relevant to them. Keep your response to 2 sentences." +
   "Here is a list of our exercises for reference: Leg Raises, Arm Circles, Lap Pull Downs";
 
-async function fetchCompletion(message) {
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+const cloudflare_acct_id = process.env.REACT_APP_CLOUDFLARE_ACCT_ID;
+const cloudflare_api_key = process.env.REACT_APP_CLOUDFLARE_API_KEY;
+
+//CLOUDFLARE
+async function run(model, input) {
+  const response = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${cloudflare_acct_id}/ai/run/${model}`,
+    {
+      headers: { Authorization: `Bearer ${cloudflare_api_key}`},
+      method: "POST",
+      body: JSON.stringify(input),
+    }
+  );
+  const result = await response.json();
+  return result;
+}
+
+async function fetchResponse(message) {
+  await run("@cf/meta/llama-3-8b-instruct", {
     messages: [
-      { role: "system", content: `${instructions}` },
+      {
+        role: "system",
+        content: `${instructions}`,
+      },
       {
         role: "user",
-        content: `${message}`,
+        content:
+          `${message}`,
       },
     ],
+  }).then((response) => {
+    console.log(JSON.stringify(response));
+    return JSON.stringify(response);
   });
-  return completion;
-};
+}
+
+//OPENAI
+// const openai = new OpenAI({
+//   apiKey: `${process.env.REACT_APP_OPEN_AI_API_KEY}`, dangerouslyAllowBrowser: true
+// });
+// async function fetchCompletion(message) {
+//   const completion = await openai.chat.completions.create({
+//     model: "gpt-4o-mini",
+//     messages: [
+//       { role: "system", content: `${instructions}` },
+//       {
+//         role: "user",
+//         content: `${message}`,
+//       },
+//     ],
+//   });
+//   return completion;
+// };
 
 // Function to generate avatar based on user's name
 const stringAvatar = (name) => {
   return {
     sx: {
-      bgcolor: "#00796b", // Default color
+      bgcolor: "#f59e0b", // Default color
       color: "#FFF",
     },
     children: `${name[0]}`, // Display first letter
@@ -51,7 +86,9 @@ const Chatbot = () => {
     { id: uuidv4(), user: "Bot", message: `Hello! How can I assist you today?` },
   ]);
   const [inputMessage, setInputMessage] = useState("");
-  const [currResponse, setCurrResponse] = useState("Default Response");
+  //const [currResponse, setCurrResponse] = useState("");
+  
+
   const formRef = useRef(null);
 
   const handleSendMessage = async (e) => {
@@ -67,23 +104,25 @@ const Chatbot = () => {
     // Add user message to the chat
     setMessages((prevMessages) => [...prevMessages, userMessage]);
   
+    var curr_response = "";
     try {
       // Await the API response
-      const completion = await fetchCompletion(userMessage.message);
+      //const completion = await fetchCompletion(userMessage.message);
+      const completion = await fetchResponse(userMessage.message);
       console.log(completion);
   
       // Ensure there are choices in the response
       if (completion && completion.choices && completion.choices.length > 0) {
-        setCurrResponse(completion.choices[0].message.content);
+        curr_response = completion.choices[0].message.content;
       } else {
-        setCurrResponse("Sorry, I couldn't process that.");
+        curr_response = "Sorry, I couldn't process that.";
       }
   
       // Simulate bot reply
       const botMessage = {
         id: uuidv4(),
         user: "Bot",
-        message: currResponse,
+        message: curr_response,
       };
   
       // Add bot message after user message
@@ -92,7 +131,7 @@ const Chatbot = () => {
       }, 1000); // Delay bot reply for a more natural feel
     } catch (error) {
       console.error("Error fetching completion:", error);
-      setCurrResponse("Sorry, there was an error processing your request.");
+      curr_response = "Sorry, there was an error processing your request.";
     }
   
     setInputMessage(""); // Clear input field
@@ -100,6 +139,7 @@ const Chatbot = () => {
   // Handle key press to submit the form
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
+      e.preventDefault();
       formRef.current.requestSubmit();
     }
   };
@@ -121,7 +161,7 @@ const Chatbot = () => {
             <Typography
               sx={{
                 marginLeft: "10px",
-                backgroundColor: "#f5f5f5",
+                backgroundColor: "#fef3c7",
                 padding: "10px",
                 borderRadius: "10px",
               }}
@@ -140,13 +180,13 @@ const Chatbot = () => {
           placeholder="Type a message..."
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyPress}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton
                   onClick={() => formRef.current.requestSubmit()}
-                  color="primary"
+                  color="#ca8a04"
                 >
                   <SendRoundedIcon />
                 </IconButton>
