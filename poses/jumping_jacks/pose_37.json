@@ -1,0 +1,108 @@
+{
+  "coordinates": {
+    "left_shoulder": {
+      "x": 0.6099756360054016, 
+      "y": 0.18613344430923462
+    }, 
+    "right_shoulder": {
+      "x": 0.48526328802108765, 
+      "y": 0.1849532276391983
+    }, 
+    "left_elbow": {
+      "x": 0.6938698887825012, 
+      "y": 0.21962904930114746
+    }, 
+    "right_elbow": {
+      "x": 0.402559369802475, 
+      "y": 0.21383564174175262
+    }, 
+    "left_wrist": {
+      "x": 0.7797538042068481, 
+      "y": 0.2180013805627823
+    }, 
+    "right_wrist": {
+      "x": 0.3183717727661133, 
+      "y": 0.19859394431114197
+    }, 
+    "left_hip": {
+      "x": 0.581752598285675, 
+      "y": 0.44782426953315735
+    }, 
+    "right_hip": {
+      "x": 0.5087286233901978, 
+      "y": 0.446563720703125
+    }, 
+    "left_knee": {
+      "x": 0.6044374704360962, 
+      "y": 0.6405476927757263
+    }, 
+    "right_knee": {
+      "x": 0.48116040229797363, 
+      "y": 0.6351103186607361
+    }, 
+    "left_ankle": {
+      "x": 0.638695478439331, 
+      "y": 0.833794891834259
+    }, 
+    "right_ankle": {
+      "x": 0.45574069023132324, 
+      "y": 0.8316631317138672
+    }
+  }, 
+  "landmarks": {
+    "left_shoulder": 11, 
+    "right_shoulder": 12, 
+    "left_elbow": 13, 
+    "right_elbow": 14, 
+    "left_wrist": 15, 
+    "right_wrist": 16, 
+    "left_hip": 23, 
+    "right_hip": 24, 
+    "left_knee": 25, 
+    "right_knee": 26, 
+    "left_ankle": 27, 
+    "right_ankle": 28
+  }, 
+  "connections": [
+    [
+      "left_shoulder", 
+      "left_elbow"
+    ], 
+    [
+      "left_elbow", 
+      "left_wrist"
+    ], 
+    [
+      "right_shoulder", 
+      "right_elbow"
+    ], 
+    [
+      "right_elbow", 
+      "right_wrist"
+    ], 
+    [
+      "left_hip", 
+      "left_knee"
+    ], 
+    [
+      "right_hip", 
+      "right_knee"
+    ], 
+    [
+      "left_knee", 
+      "left_ankle"
+    ], 
+    [
+      "right_knee", 
+      "right_ankle"
+    ], 
+    [
+      "left_shoulder", 
+      "left_hip"
+    ], 
+    [
+      "right_shoulder", 
+      "right_hip"
+    ]
+  ]
+}
