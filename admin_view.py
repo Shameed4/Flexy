@@ -50,6 +50,12 @@ if args.upload:
 else:
     # Define landmarks of interest and their connections
     landmarks_of_interest = {
+        "left_shoulder": 11,
+        "right_shoulder": 12,
+        "left_elbow": 13,
+        "right_elbow": 14,
+        "left_wrist": 15,
+        "right_wrist": 16,
         "left_hip": 23,
         "right_hip": 24,
         "left_knee": 25,
@@ -59,11 +65,18 @@ else:
     }
 
     connections = [
+        ("left_shoulder", "left_elbow"),
+        ("left_elbow", "left_wrist"),
+        ("right_shoulder", "right_elbow"),
+        ("right_elbow", "right_wrist"),
         ("left_hip", "left_knee"),
         ("right_hip", "right_knee"),
         ("left_knee", "left_ankle"),
         ("right_knee", "right_ankle"),
+        ("left_shoulder", "left_hip"),
+        ("right_shoulder", "right_hip"),
     ]
+
     # Initialize dictionaries to store saved poses
     saved_pose_s = {}
 
