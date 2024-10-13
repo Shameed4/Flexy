@@ -1,0 +1,54 @@
+{
+  "coordinates": {
+    "left_hip": {
+      "x": 0.559337854385376, 
+      "y": 0.5745915174484253
+    }, 
+    "right_hip": {
+      "x": 0.4747712016105652, 
+      "y": 0.5941081643104553
+    }, 
+    "left_knee": {
+      "x": 0.5678995847702026, 
+      "y": 0.7789118885993958
+    }, 
+    "right_knee": {
+      "x": 0.482682466506958, 
+      "y": 0.8332679271697998
+    }, 
+    "left_ankle": {
+      "x": 0.5711637139320374, 
+      "y": 0.957484781742096
+    }, 
+    "right_ankle": {
+      "x": 0.4892860949039459, 
+      "y": 1.0479099750518799
+    }
+  }, 
+  "landmarks": {
+    "left_hip": 23, 
+    "right_hip": 24, 
+    "left_knee": 25, 
+    "right_knee": 26, 
+    "left_ankle": 27, 
+    "right_ankle": 28
+  }, 
+  "connections": [
+    [
+      "left_hip", 
+      "left_knee"
+    ], 
+    [
+      "right_hip", 
+      "right_knee"
+    ], 
+    [
+      "left_knee", 
+      "left_ankle"
+    ], 
+    [
+      "right_knee", 
+      "right_ankle"
+    ]
+  ]
+}

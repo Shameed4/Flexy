@@ -23,6 +23,7 @@ poses_dir = "./poses"
 
 # Parse the arguments
 args = parser.parse_args()
+saved_image_s, landmarks_of_interest, connections, saved_pose_s = None, None, None, None
 
 def update_from_pose(path):
     with open(f"{path}.json", "r") as f:
@@ -49,22 +50,19 @@ if args.upload:
 else:
     # Define landmarks of interest and their connections
     landmarks_of_interest = {
-        "left_shoulder": 11,
-        "right_shoulder": 12,
-        "left_elbow": 13,
-        "right_elbow": 14,
-        # "left_wrist": 15,
-        # "right_wrist": 16,
-        # "left_hip": 23,
-        # "right_hip": 24,
+        "left_hip": 23,
+        "right_hip": 24,
+        "left_knee": 25,
+        "right_knee": 26,
+        "left_ankle": 27,
+        "right_ankle": 28,
     }
+
     connections = [
-        ("left_shoulder", "left_elbow"),
-        # ("left_elbow", "left_wrist"),
-        ("right_shoulder", "right_elbow"),
-        # ("right_elbow", "right_wrist"),
-        # ("left_shoulder", "left_hip"),
-        # ("right_shoulder", "right_hip"),
+        ("left_hip", "left_knee"),
+        ("right_hip", "right_knee"),
+        ("left_knee", "left_ankle"),
+        ("right_knee", "right_ankle"),
     ]
     # Initialize dictionaries to store saved poses
     saved_pose_s = {}
