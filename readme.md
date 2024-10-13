@@ -10,7 +10,7 @@ Our app is designed to make rehabilitation more engaging and accessible, helping
 
 1. We use an advanced posture detection algorithm to identify key body joints and landmarks in real-time videos. This allows the system to map the user's movements with high accuracy and ensure that users are performing therapeutic exercises correctly which is crucial for individuals with arthritis or those recovering from sports injuries. Our custom dataset of various correct exercise postures increases the algorithm's precision making it adaptable to different body types and conditions, ensuring exercises are both safe and effective. This reduces the risk of improper movements which can worsen the condition or slow recovery.
 
-  ![videofitness-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/00cf41a7-3317-46a3-bf24-a1322c22c701)
+    ![videofitness-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/00cf41a7-3317-46a3-bf24-a1322c22c701)
 
 
 
