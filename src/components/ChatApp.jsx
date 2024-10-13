@@ -12,26 +12,27 @@ import { v4 as uuidv4 } from "uuid";
 import OpenAI from "openai/index.mjs";
 
 
-// const openai = new OpenAI({
-//   apiKey: process.env.REACT_APP_OPENAI_API_KEY,
-// });
+const openai = new OpenAI({
+  apiKey: `${process.env.REACT_APP_OPEN_AI_API_KEY}`, dangerouslyAllowBrowser: true
+});
 
-// const fetchCompletion = async (message) => {
-//   const completion = await openai.chat.completions.create({
-//     model: "gpt-4o-mini",
-//     messages: [
-//       { role: "system", content: "You are a helpful assistant for a physical therapy / exercise app. Your job is to refer people to any of our exercises that may help them. Keep your response to 2 sentences." },
-//       {
-//         role: "user",
-//         content: ${message},
-//       },
-//     ],
-//   });
+const instructions = "You are a helpful assistant for a physical therapy / exercise app." +
+  "Your job is to refer people to any of our exercises that may be relevant to them. Keep your response to 2 sentences." +
+  "Here is a list of our exercises for reference: Leg Raises, Arm Circles, Lap Pull Downs";
 
-//   console.log(completion.choices[0].message);
-// };
-
-// fetchCompletion();
+async function fetchCompletion(message) {
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      { role: "system", content: `${instructions}` },
+      {
+        role: "user",
+        content: `${message}`,
+      },
+    ],
+  });
+  return completion;
+};
 
 // Function to generate avatar based on user's name
 const stringAvatar = (name) => {
@@ -50,37 +51,52 @@ const Chatbot = () => {
     { id: uuidv4(), user: "Bot", message: `Hello! How can I assist you today?` },
   ]);
   const [inputMessage, setInputMessage] = useState("");
+  const [currResponse, setCurrResponse] = useState("Default Response");
   const formRef = useRef(null);
 
-  // Function to handle form submission (sending message)
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputMessage.trim()) return; // Prevent empty message
-
+  
     const userMessage = {
       id: uuidv4(),
       user: "User",
       message: inputMessage,
     };
-
+  
     // Add user message to the chat
     setMessages((prevMessages) => [...prevMessages, userMessage]);
-
-    // Simulate bot reply
-    const botMessage = {
-      id: uuidv4(),
-      user: "Bot",
-      message: `You said: "${inputMessage}"`, // You can replace this with API logic
-    };
-
-    // Add bot message after user message
-    setTimeout(() => {
-      setMessages((prevMessages) => [...prevMessages, botMessage]);
-    }, 1000); // Delay bot reply for a more natural feel
-
+  
+    try {
+      // Await the API response
+      const completion = await fetchCompletion(userMessage.message);
+      console.log(completion);
+  
+      // Ensure there are choices in the response
+      if (completion && completion.choices && completion.choices.length > 0) {
+        setCurrResponse(completion.choices[0].message.content);
+      } else {
+        setCurrResponse("Sorry, I couldn't process that.");
+      }
+  
+      // Simulate bot reply
+      const botMessage = {
+        id: uuidv4(),
+        user: "Bot",
+        message: currResponse,
+      };
+  
+      // Add bot message after user message
+      setTimeout(() => {
+        setMessages((prevMessages) => [...prevMessages, botMessage]);
+      }, 1000); // Delay bot reply for a more natural feel
+    } catch (error) {
+      console.error("Error fetching completion:", error);
+      setCurrResponse("Sorry, there was an error processing your request.");
+    }
+  
     setInputMessage(""); // Clear input field
   };
-
   // Handle key press to submit the form
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
