@@ -57,7 +57,7 @@ def add_banner_from_image(image, banner_image):
 
 
 # Load the existing banner image (adjust the path to your banner image)
-banner_image = cv2.imread('ArthritEase.png')
+banner_image = cv2.imread('2.png')
 
 cap = cv2.VideoCapture(1)  # Change to the appropriate camera index
 

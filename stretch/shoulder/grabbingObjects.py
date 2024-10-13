@@ -23,7 +23,7 @@ cap = cv2.VideoCapture(1)
 start_time = time.time()
 
 # Load the banner image (Adjust the path to your banner image)
-banner_image = cv2.imread('ArthritEase.png')  # Adjust the path to your banner image
+banner_image = cv2.imread('3.png')  # Adjust the path to your banner image
 
 # Function to add the banner from an existing image with aspect ratio preservation
 def add_banner_from_image(image, banner_image):

@@ -199,5 +199,59 @@ def run_reach():
         }
         return jsonify(error_response), 500
 
+@app.route('/fitness-circle', methods=['GET'])
+def run_fitness_circle():
+    try:
+        # Run the script and capture the output
+        result = subprocess.run(
+            ['python3', 'fitness/arm_circles.py'],
+            check=True,
+            capture_output=True,
+            text=True
+        )
+
+        # Append a message after the script ends
+        response_data = {
+            'output': result.stdout,
+            'message': "Script has completed successfully!"
+        }
+
+        return jsonify(response_data), 200
+
+    except subprocess.CalledProcessError as e:
+        # Capture and return the error message if the script fails
+        error_response = {
+            'error': e.stderr,
+            'message': f"Script failed with return code: {e.returncode}"
+        }
+        return jsonify(error_response), 500
+
+@app.route('/fitness-legs', methods=['GET'])
+def run_fitness_legs():
+    try:
+        # Run the script and capture the output
+        result = subprocess.run(
+            ['python3', 'fitness/leg_raises.py'],
+            check=True,
+            capture_output=True,
+            text=True
+        )
+
+        # Append a message after the script ends
+        response_data = {
+            'output': result.stdout,
+            'message': "Script has completed successfully!"
+        }
+
+        return jsonify(response_data), 200
+
+    except subprocess.CalledProcessError as e:
+        # Capture and return the error message if the script fails
+        error_response = {
+            'error': e.stderr,
+            'message': f"Script failed with return code: {e.returncode}"
+        }
+        return jsonify(error_response), 500
+
 if __name__ == '__main__':
     app.run(debug=True)

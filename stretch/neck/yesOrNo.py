@@ -40,7 +40,7 @@ def add_banner_from_image(image, banner_image):
     return full_image
 
 # Load the existing banner image (adjust the path to your banner image)
-banner_image = cv2.imread('ArthritEase.png')  # Adjust the path
+banner_image = cv2.imread('2.png')  # Adjust the path
 
 cap = cv2.VideoCapture(1)
 
