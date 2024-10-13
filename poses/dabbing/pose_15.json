@@ -1,0 +1,76 @@
+{
+  "coordinates": {
+    "left_shoulder": {
+      "x": 0.676632821559906, 
+      "y": 0.2912967801094055
+    }, 
+    "right_shoulder": {
+      "x": 0.47540950775146484, 
+      "y": 0.24845926463603973
+    }, 
+    "left_elbow": {
+      "x": 0.7474963068962097, 
+      "y": 0.2082669734954834
+    }, 
+    "right_elbow": {
+      "x": 0.30316609144210815, 
+      "y": 0.2554115951061249
+    }, 
+    "left_wrist": {
+      "x": 0.6071070432662964, 
+      "y": 0.10921201854944229
+    }, 
+    "right_wrist": {
+      "x": 0.1485537737607956, 
+      "y": 0.18405506014823914
+    }, 
+    "left_hip": {
+      "x": 0.6116200685501099, 
+      "y": 0.7130301594734192
+    }, 
+    "right_hip": {
+      "x": 0.4747708737850189, 
+      "y": 0.7027441263198853
+    }
+  }, 
+  "landmarks": {
+    "left_shoulder": 11, 
+    "right_shoulder": 12, 
+    "left_elbow": 13, 
+    "right_elbow": 14, 
+    "left_wrist": 15, 
+    "right_wrist": 16, 
+    "left_hip": 23, 
+    "right_hip": 24
+  }, 
+  "connections": [
+    [
+      "left_shoulder", 
+      "left_elbow"
+    ], 
+    [
+      "left_elbow", 
+      "left_wrist"
+    ], 
+    [
+      "right_shoulder", 
+      "right_elbow"
+    ], 
+    [
+      "right_elbow", 
+      "right_wrist"
+    ], 
+    [
+      "left_shoulder", 
+      "right_shoulder"
+    ], 
+    [
+      "left_shoulder", 
+      "left_hip"
+    ], 
+    [
+      "right_shoulder", 
+      "right_hip"
+    ]
+  ]
+}

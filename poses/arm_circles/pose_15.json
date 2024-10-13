@@ -1,0 +1,36 @@
+{
+  "coordinates": {
+    "left_shoulder": {
+      "x": 0.6610387563705444, 
+      "y": 0.4033330976963043
+    }, 
+    "right_shoulder": {
+      "x": 0.4566352367401123, 
+      "y": 0.4086514711380005
+    }, 
+    "left_elbow": {
+      "x": 0.7213975191116333, 
+      "y": 0.606574296951294
+    }, 
+    "right_elbow": {
+      "x": 0.41401371359825134, 
+      "y": 0.6159322261810303
+    }
+  }, 
+  "landmarks": {
+    "left_shoulder": 11, 
+    "right_shoulder": 12, 
+    "left_elbow": 13, 
+    "right_elbow": 14
+  }, 
+  "connections": [
+    [
+      "left_shoulder", 
+      "left_elbow"
+    ], 
+    [
+      "right_shoulder", 
+      "right_elbow"
+    ]
+  ]
+}
