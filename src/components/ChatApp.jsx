@@ -39,7 +39,7 @@ async function fetchCompletion(message) {
 const stringAvatar = (name) => {
   return {
     sx: {
-      bgcolor: "#00796b", // Default color
+      bgcolor: "#f59e0b", // Default color
       color: "#FFF",
     },
     children: `${name[0]}`, // Display first letter
@@ -122,7 +122,7 @@ const Chatbot = () => {
             <Typography
               sx={{
                 marginLeft: "10px",
-                backgroundColor: "#f5f5f5",
+                backgroundColor: "#fef3c7",
                 padding: "10px",
                 borderRadius: "10px",
               }}
@@ -141,13 +141,13 @@ const Chatbot = () => {
           placeholder="Type a message..."
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyPress}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton
                   onClick={() => formRef.current.requestSubmit()}
-                  color="primary"
+                  color="#ca8a04"
                 >
                   <SendRoundedIcon />
                 </IconButton>
