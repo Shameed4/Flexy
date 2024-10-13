@@ -88,12 +88,12 @@ const Sidebar = ({ setMainArea }) => {
         </List>
 
         <ListItem
-          sx={{ marginTop: "auto", background: "#795030", opacity: "90%" }}
+          sx={{ marginTop: "auto", background: "#fde68a", opacity: "90%" }}
           disablePadding
         >
           <ListItemButton>
             <ListItemIcon>
-              <LinkOutlinedIcon sx={{ color: "#fdfcf6" }} />
+              <LinkOutlinedIcon sx={{ color: "black" }} />
             </ListItemIcon>
             <ListItemText
               primary="Demo Video"
@@ -101,7 +101,7 @@ const Sidebar = ({ setMainArea }) => {
                 fontFamily: "Inter, sans-serif",
                 fontWeight: 700,
                 fontSize: "1.25rem",
-                color: "#fdfcf6",
+                color: "black",
               }}
             />
           </ListItemButton>

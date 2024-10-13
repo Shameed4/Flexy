@@ -59,7 +59,7 @@ const Fitness = () => {
       component="main"
       sx={{ flexGrow: 1, bgcolor: "background.default", mr: "10px", p: 3 }}
     >
-      
+
       <Typography variant="h4" sx={{ my: 4, fontWeight: "bold" }} gutterBottom>
         Fitness
       </Typography>
@@ -69,12 +69,12 @@ const Fitness = () => {
       <Grid container spacing={4}>
         {exerciseData.slice(0, 3).map((memory, index) => (
           <Grid item xs={12} sm={11} md={4} key={index}>
-            <Card 
+            <Card
               variant="outlined"
               sx={{
                 maxWidth: "600px",
               }}
-              >
+            >
               <CardMedia
                 component="img"
                 fullHeight
@@ -91,7 +91,7 @@ const Fitness = () => {
                 </Typography>
                 <Button
                   variant="outlined"
-                  style={{marginTop: "5px"}}
+                  style={{ marginTop: "5px" }}
                   sx={{
                     p: 1,
                     borderColor: "#fcd34d",

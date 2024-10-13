@@ -40,20 +40,20 @@ const Navbar = () => {
             direction="row"
             sx={{ justifyContent: "end", alignItems: "center", flexGrow: 2 }}
           >
-              <Button
-                variant="contained"
-                color="inherit"
-                sx={{
-                  borderColor: "#e1b44f",
-                  bgcolor: "#e1b44f",
-                  textTransform: "none",
-                  fontWeight: "bold",
-                }}
-                component={Link} // Pass the Link component directly
-                to="/sign-in"
-              >
-                SIGN IN
-              </Button>
+            <Button
+              variant="contained"
+              color="inherit"
+              sx={{
+                borderColor: "#e1b44f",
+                bgcolor: "#fde68a",
+                textTransform: "none",
+                fontWeight: "bold",
+              }}
+              component={Link} // Pass the Link component directly
+              to="/sign-in"
+            >
+              SIGN IN
+            </Button>
           </Stack>
         </Toolbar>
       </AppBar>
