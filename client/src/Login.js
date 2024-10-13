@@ -20,7 +20,7 @@ function Login() {
         formData.append('file', file);
 
         try {
-            const response = await axios.post('/login', formData);
+            const response = await axios.post('http://127.0.0.1:5000/login', formData);
             setMessage(response.data.message);
         } catch (error) {
             setMessage('Login failed');

@@ -20,7 +20,7 @@ function Register() {
         formData.append('file', file);
 
         try {
-            const response = await axios.post('/register', formData);
+            const response = await axios.post('http://127.0.0.1:5000/register', formData);
             setMessage(response.data.message);
         } catch (error) {
             setMessage('Registration failed');
