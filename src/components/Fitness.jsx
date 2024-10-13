@@ -1,80 +1,185 @@
-import React from "react";
+import React, { useState } from "react";
 import {
-  CardHeader,
   Box,
-  Toolbar,
   Typography,
+  Grid,
   Card,
   CardContent,
-  Avatar,
-  Grid,
-  Divider,
   CardMedia,
   Button,
-  Link,
+  Rating
 } from "@mui/material";
 
-// // Sample data
-const user = {
-  name: "Tejas Srikanth",
-  avatar: "https://via.placeholder.com/150", // Replace with actual image URL
-  description:
-    "Software Developer based in San Francisco. Passionate about technology and open-source.",
-  email: "tejas.srikanth@example.com",
-  phone: "+1-234-567-8900",
-  medicalConditions: [
-    "Alzheimer's disease - affects memory and cognitive functions.",
-    "High blood pressure - requires regular monitoring and medication.",
-    "Heart condition - needs medication and periodic check-ups.",
-    "Type II Diabetes - needs Insulin",
-    "See more.",
-  ],
-};
-
+// Sample data
 const exerciseData = [
   {
     title: "Jumping Jacks",
     image: `${process.env.PUBLIC_URL}/jumping.webp`,
-    description:
-      "A relaxing vacation on the beautiful beaches of Bali, enjoying the sun and surf.",
+    description: "Jumping jacks are a full-body workout that improves cardiovascular fitness.",
+    workoutType: "fitness-jacks",
   },
   {
     title: "Arm Circles",
     image: `${process.env.PUBLIC_URL}/arms.webp`,
-    description:
-      "A relaxing vacation on the beautiful beaches of Bali, enjoying the sun and surf.",
+    description: "Arm circles help to strengthen the shoulders and improve range of motion.",
+    workoutType: "fitness-circle",
   },
   {
     title: "Knee Raises",
     image: `${process.env.PUBLIC_URL}/legs.webp`,
-    description:
-      "A relaxing vacation on the beautiful beaches of Bali, enjoying the sun and surf.",
+    description: "Knee raises target the lower abdominal muscles and improve leg strength.",
+    workoutType: "fitness-legs",
   },
 ];
 
-
 const Fitness = () => {
+  const [ratingValue, setRatingValue] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentExercise, setCurrentExercise] = useState(null);
+
+  // Function to calculate stars based on the returned value (0-100)
+  const calculateRating = (value) => {
+    if (value <= 50) return 0;
+    return Math.min(Math.floor((value - 50) / 10) + 1, 5);
+  };
+
+  // Function to make the GET request
+  const fetchExercise = async (workoutType) => {
+    setIsLoading(true);
+    fetch(`http://127.0.0.1:5000/${workoutType}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      mode: 'cors',
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setRatingValue("100.00");
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error fetching exercise data:', error);
+        setIsLoading(false);
+      });
+  };
+
+  // Handle start button for the first exercise
+  const handleStart = (workoutType) => {
+    setCurrentExercise(workoutType); // Set the current exercise type
+    fetchExercise(workoutType); // Fetch the exercise data
+  };
+
+  // Conditionally render the loading message or the rating
+  if (isLoading) {
+    return (
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          bgcolor: "background.default",
+        }}
+      >
+        <Typography variant="h4" sx={{ fontWeight: "bold", fontFamily: "Berkshire Swash" }}>
+          Wait! Proceeding to Desktop
+        </Typography>
+      </Box>
+    );
+  }
+
+  // Conditionally render the rating once the request is successful
+  if (ratingValue !== null) {
+    return (
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          bgcolor: "background.default",
+        }}
+      >
+        <Rating
+          name="read-only"
+          value={ratingValue}
+          readOnly
+          sx={{ fontSize: "5rem", mb: 3 }}
+        />
+        <Typography
+          variant="h3"
+          sx={{
+            fontWeight: "bold",
+            color: ratingValue >= 4 ? "green" : "red",
+          }}
+        >
+          {ratingValue >= 4 ? "Great job!" : "Try again"}
+        </Typography>
+
+        {/* Redo Button */}
+        <Button
+          variant="outlined"
+          onClick={() => fetchExercise(currentExercise)} // Redo the current exercise
+          sx={{
+            mt: 3,
+            p: 1,
+            borderColor: "#fcd34d",
+            borderWidth: "2px",
+            color: "#000000",
+            fontWeight: "bold",
+            textTransform: "none",
+            "&:hover": {
+              backgroundColor: "#fcd34d",
+            },
+          }}
+        >
+          Redo
+        </Button>
+
+        <Button
+          variant="outlined"
+          onClick={() => setRatingValue(null)} // Reset to show exercises again
+          sx={{
+            mt: 3,
+            p: 1,
+            borderColor: "#4caf50",
+            borderWidth: "2px",
+            color: "#000000",
+            fontWeight: "bold",
+            textTransform: "none",
+            "&:hover": {
+              backgroundColor: "#4caf50",
+            },
+          }}
+        >
+          Back to Exercises
+        </Button>
+      </Box>
+    );
+  }
+
+  // Initial layout with cards before button click
   return (
     <Box
       component="main"
       sx={{ flexGrow: 1, bgcolor: "background.default", mr: "10px", p: 3 }}
     >
-
       <Typography variant="h4" sx={{ my: 4, fontWeight: "bold" }} gutterBottom>
         Fitness
       </Typography>
       <Typography variant="h6" sx={{ my: 4, fontWeight: "light" }} gutterBottom>
-        Choose a workout to learn.
+        Choose a workout.
       </Typography>
       <Grid container spacing={4}>
-        {exerciseData.slice(0, 3).map((memory, index) => (
+        {exerciseData.map((memory, index) => (
           <Grid item xs={12} sm={11} md={4} key={index}>
-            <Card
-              variant="outlined"
-              sx={{
-                maxWidth: "600px",
-              }}
-            >
+            <Card variant="outlined" sx={{ maxWidth: "600px" }}>
               <CardMedia
                 component="img"
                 fullHeight
@@ -104,8 +209,7 @@ const Fitness = () => {
                     },
                   }}
                   disableElevation
-                  component={Link}
-                  to="/#0"
+                  onClick={() => handleStart(memory.workoutType)} // Start exercise for this card
                   size="medium"
                 >
                   Start
@@ -115,30 +219,6 @@ const Fitness = () => {
           </Grid>
         ))}
       </Grid>
-
-      <Box sx={{ mt: 2 }}>
-        <Button
-          variant="outlined"
-          fullWidth
-          sx={{
-            p: 1,
-            borderColor: "#fcd34d",
-            borderWidth: "2px",
-            color: "#000000",
-            fontWeight: "bold",
-            textTransform: "none",
-            "&:hover": {
-              backgroundColor: "#fcd34d",
-            },
-          }}
-          disableElevation
-          component={Link}
-          to="/dashboard"
-          size="medium"
-        >
-          View more memories
-        </Button>
-      </Box>
     </Box>
   );
 };
