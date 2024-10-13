@@ -1,73 +1,13 @@
 import React from "react";
 import {
-  CardHeader,
   Box,
-  Toolbar,
   Typography,
   Card,
   CardContent,
-  Avatar,
   Grid,
-  Divider,
-  CardMedia,
-  Button,
-  Link,
 } from "@mui/material";
 
-const recentlyCompleted = [
-  {
-    title: "Wrist",
-    description:
-      "A relaxing vacation on the beautiful beaches of Bali, enjoying the sun and surf.",
-  },
-  {
-    title: "Neck",
-    description:
-      "A relaxing vacation on the beautiful beaches of Bali, enjoying the sun and surf.",
-  },
-];
-
-const reccomendations = [
-  {
-    title: "Legs",
-    description:
-      "A relaxing vacation on the beautiful beaches of Bali, enjoying the sun and surf.",
-  },
-  {
-    title: "Shoulder",
-    description:
-      "A relaxing vacation on the beautiful beaches of Bali, enjoying the sun and surf.",
-  },
-  {
-    title: "Ankles",
-    description:
-      "A relaxing vacation on the beautiful beaches of Bali, enjoying the sun and surf.",
-  },
-];
-
-const user = [
-  {
-    title: "Daily Streak",
-    description:
-      "Flexy every day!",
-    number: 5
-  },
-  {
-    title: "Overall Accuracy",
-    description:
-      "Not flexy, you know it.",
-    number: 2
-  },
-  {
-    title: "Exercises Done",
-    description:
-      "Super flexy!",
-    number: 68
-  },
-];
-
-
-const Stats = () => {
+const Stats = ({ user }) => {
   return (
     <Box
       component="main"
@@ -84,7 +24,7 @@ const Stats = () => {
         Stats
       </Typography>
       <Grid container spacing={4}>
-        {user.slice(0, 3).map((memory, index) => (
+        {user.stats.slice(0, 3).map((memory, index) => (
           <Grid item xs={10} sm={10} md={4} key={index}>
             <Card
               variant="outlined"
@@ -100,7 +40,11 @@ const Stats = () => {
                 <Typography variant="body2" color="text.secondary">
                   {memory.description}
                 </Typography>
-                <Typography variant="h1" color="text.secondary" style={{ justifyContent: "center" }}>
+                <Typography
+                  variant="h1"
+                  color="text.secondary"
+                  style={{ justifyContent: "center" }}
+                >
                   {memory.number}
                 </Typography>
               </CardContent>
@@ -113,7 +57,7 @@ const Stats = () => {
         Recently Completed
       </Typography>
       <Grid container spacing={4}>
-        {recentlyCompleted.slice(0, 3).map((memory, index) => (
+        {user.recentlyCompleted.slice(0, 3).map((memory, index) => (
           <Grid item xs={10} sm={10} md={10} key={index}>
             <Card
               variant="outlined"
@@ -138,7 +82,7 @@ const Stats = () => {
         Recommended Next Exercises
       </Typography>
       <Grid container spacing={4}>
-        {reccomendations.slice(0, 3).map((memory, index) => (
+        {user.recommendations.slice(0, 3).map((memory, index) => (
           <Grid item xs={10} sm={10} md={10} key={index}>
             <Card
               variant="outlined"

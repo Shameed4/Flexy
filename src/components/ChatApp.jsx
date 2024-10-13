@@ -9,30 +9,31 @@ import {
 } from "@mui/material";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import { v4 as uuidv4 } from "uuid";
-import OpenAI from "openai/index.mjs";
 
-
-const openai = new OpenAI({
-  apiKey: `${process.env.REACT_APP_OPEN_AI_API_KEY}`, dangerouslyAllowBrowser: true
-});
-
-const instructions = "You are a helpful assistant for a physical therapy / exercise app." +
-  "Your job is to refer people to any of our exercises that may be relevant to them. Keep your response to 2 sentences." +
-  "Here is a list of our exercises for reference: Leg Raises, Arm Circles, Lap Pull Downs";
-
+// Function to send the message to Flask and get the response
 async function fetchCompletion(message) {
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      { role: "system", content: `${instructions}` },
-      {
-        role: "user",
-        content: `${message}`,
+  try {
+    const response = await fetch('http://127.0.0.1:5000/cloudflare_ai', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    ],
-  });
-  return completion;
-};
+      body: JSON.stringify({
+        message: message,  // Send the user message to Flask
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    const data = await response.json();  // Get the JSON response from Flask
+    return data;  // Return the response from Flask
+  } catch (error) {
+    console.error('Error fetching completion:', error);
+    return { error: "Error processing your request" };
+  }
+}
 
 // Function to generate avatar based on user's name
 const stringAvatar = (name) => {
@@ -51,55 +52,55 @@ const Chatbot = () => {
     { id: uuidv4(), user: "Bot", message: `Hello! How can I assist you today?` },
   ]);
   const [inputMessage, setInputMessage] = useState("");
-  const [currResponse, setCurrResponse] = useState("Default Response");
   const formRef = useRef(null);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputMessage.trim()) return; // Prevent empty message
-  
+
     const userMessage = {
       id: uuidv4(),
       user: "User",
       message: inputMessage,
     };
-  
+
     // Add user message to the chat
     setMessages((prevMessages) => [...prevMessages, userMessage]);
-  
+
     try {
-      // Await the API response
+      // Await the Flask API response
       const completion = await fetchCompletion(userMessage.message);
-      console.log(completion);
-  
-      // Ensure there are choices in the response
-      if (completion && completion.choices && completion.choices.length > 0) {
-        setCurrResponse(completion.choices[0].message.content);
-      } else {
-        setCurrResponse("Sorry, I couldn't process that.");
-      }
-  
-      // Simulate bot reply
+
+      // Get the message from the Flask response
+      const botMessageContent = completion.result?.response || "Sorry, I couldn't process that.";
+
+      // Create bot message
       const botMessage = {
         id: uuidv4(),
         user: "Bot",
-        message: currResponse,
+        message: botMessageContent,
       };
-  
+
       // Add bot message after user message
-      setTimeout(() => {
-        setMessages((prevMessages) => [...prevMessages, botMessage]);
-      }, 1000); // Delay bot reply for a more natural feel
+      setMessages((prevMessages) => [...prevMessages, botMessage]);
+
     } catch (error) {
       console.error("Error fetching completion:", error);
-      setCurrResponse("Sorry, there was an error processing your request.");
+      const botMessage = {
+        id: uuidv4(),
+        user: "Bot",
+        message: "Sorry, there was an error processing your request.",
+      };
+      setMessages((prevMessages) => [...prevMessages, botMessage]);
     }
-  
+
     setInputMessage(""); // Clear input field
   };
+
   // Handle key press to submit the form
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
+      e.preventDefault();
       formRef.current.requestSubmit();
     }
   };
