@@ -88,7 +88,7 @@ while True:
   # Center below the banner
 
     # Define the radius dynamically based on the smaller dimension of the working area
-    max_radius = min(width, working_height) // 2  # Reduce a bit to leave space
+    max_radius = min(width, working_height) // 3  # Reduce a bit to leave space
 
     if not predefined_paths:
         # Generate a circle path with many points (more points = smoother line)
