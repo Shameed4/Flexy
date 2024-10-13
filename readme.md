@@ -10,10 +10,18 @@ Our app is designed to make rehabilitation more engaging and accessible, helping
 
 1. We use an advanced posture detection algorithm to identify key body joints and landmarks in real-time videos. This allows the system to map the user's movements with high accuracy and ensure that users are performing therapeutic exercises correctly which is crucial for individuals with arthritis or those recovering from sports injuries. Our custom dataset of various correct exercise postures increases the algorithm's precision making it adaptable to different body types and conditions, ensuring exercises are both safe and effective. This reduces the risk of improper movements which can worsen the condition or slow recovery.
 
+  ![videofitness-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/00cf41a7-3317-46a3-bf24-a1322c22c701)
+
+
 
 2. To make rehabilitation engaging, we introduced a gamified feature that allows users to draw shapes like circles, infinity loops, or waves with their body movements. This interactive approach is designed to help both arthritis patients and the general population improve mobility in a fun and rewarding way. By focusing on specific shapes, the system targets key joints—such as the shoulders, arms, and neck—that are commonly affected by arthritis or injuries. Drawing these shapes promotes range-of-motion exercises, which are essential for reducing stiffness and improving flexibility. The gamification aspect keeps users motivated, making it easier to stay consistent with their exercise routines, which is vital for long-term recovery and pain management.
 
+   ![2024-10-1307-13-50-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/f27ada11-704b-4c63-8573-c9a10eeb9af6)
+
+
 3. We integrated a fine-tuned conversational bot that helps users choose different exercises and movements tailored to their specific needs and goals. The bot provides personalized suggestions based on the user's current mobility, pain levels, and progress, guiding them through a variety of stretches and movements that target specific joints or areas of stiffness.
+
+   ![PNG image](https://github.com/user-attachments/assets/5d8d61f1-6f48-40d0-8c83-04e9203ea033)
 
 ## How we built it
 
