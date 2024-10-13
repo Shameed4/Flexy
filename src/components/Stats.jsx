@@ -45,7 +45,7 @@ const reccomendations = [
   },
 ];
 
-const stats = [
+const user = [
   {
     title: "Daily Streak",
     description:
@@ -84,15 +84,15 @@ const Stats = () => {
         Stats
       </Typography>
       <Grid container spacing={4}>
-        {stats.slice(0, 3).map((memory, index) => (
+        {user.slice(0, 3).map((memory, index) => (
           <Grid item xs={10} sm={10} md={4} key={index}>
-            <Card 
+            <Card
               variant="outlined"
               sx={{
                 maxWidth: "600px",
               }}
-              style={{backgroundColor: "#fde68a"}}
-              >
+              style={{ backgroundColor: "#fde68a" }}
+            >
               <CardContent>
                 <Typography variant="h6" component="div">
                   {memory.title}
@@ -100,7 +100,7 @@ const Stats = () => {
                 <Typography variant="body2" color="text.secondary">
                   {memory.description}
                 </Typography>
-                <Typography variant="h1" color="text.secondary" style={{justifyContent: "center"}}>
+                <Typography variant="h1" color="text.secondary" style={{ justifyContent: "center" }}>
                   {memory.number}
                 </Typography>
               </CardContent>
@@ -115,12 +115,12 @@ const Stats = () => {
       <Grid container spacing={4}>
         {recentlyCompleted.slice(0, 3).map((memory, index) => (
           <Grid item xs={10} sm={10} md={10} key={index}>
-            <Card 
+            <Card
               variant="outlined"
               sx={{
                 maxWidth: "600px",
               }}
-              >
+            >
               <CardContent>
                 <Typography variant="h6" component="div">
                   {memory.title}
@@ -140,12 +140,12 @@ const Stats = () => {
       <Grid container spacing={4}>
         {reccomendations.slice(0, 3).map((memory, index) => (
           <Grid item xs={10} sm={10} md={10} key={index}>
-            <Card 
+            <Card
               variant="outlined"
               sx={{
                 maxWidth: "600px",
               }}
-              >
+            >
               <CardContent>
                 <Typography variant="h6" component="div">
                   {memory.title}
