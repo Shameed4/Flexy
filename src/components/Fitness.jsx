@@ -39,14 +39,14 @@ const exerciseData = [
       "A relaxing vacation on the beautiful beaches of Bali, enjoying the sun and surf.",
   },
   {
-    title: "Lunges",
-    image: `${process.env.PUBLIC_URL}/lunge.webp`,
+    title: "Arm Circles",
+    image: `${process.env.PUBLIC_URL}/arms.webp`,
     description:
       "A relaxing vacation on the beautiful beaches of Bali, enjoying the sun and surf.",
   },
   {
-    title: "Pushups",
-    image: `${process.env.PUBLIC_URL}/pushup.webp`,
+    title: "Knee Raises",
+    image: `${process.env.PUBLIC_URL}/legs.webp`,
     description:
       "A relaxing vacation on the beautiful beaches of Bali, enjoying the sun and surf.",
   },
