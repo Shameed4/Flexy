@@ -4,24 +4,48 @@ import mediapipe as mp
 import math
 import time
 import json
-import sys
 import os
+import argparse
+from natsort import natsorted
+
+import argparse
+
+# Set up argparse
+parser = argparse.ArgumentParser(description="Process pose arguments.")
+parser.add_argument("-d", "--download", help="Specify the download directory name, to be saved within the . If empty, it is the current working directory.")
+parser.add_argument("-u", "--upload", help="Specify the reference pose. If empty, there is none.")
+parser.add_argument("-c", "--countdown_duration", help="Specify time it takes to save the current picture. If empty, it is 2 seconds")
+parser.add_argument("-e", "--exercise", help="Specify which folder the exercises are taken from. Should not be used with -d")
+parser.add_argument("-sc", "--save_countdown", help="The amount of time to block before saving. Default=0s")
+parser.add_argument("-s", "--sensitivity", help="How sensitive the model should be for accepting a position. Default=0.7")
+
+poses_dir = "./poses"
+
+# Parse the arguments
+args = parser.parse_args()
+
+def update_from_pose(path):
+    with open(f"{path}.json", "r") as f:
+        data = json.load(f)
+    global saved_image_s, landmarks_of_interest, connections, saved_pose_s
+    saved_image_s = cv2.imread(f"{path}.png")
+    landmarks_of_interest = data["landmarks"]
+    connections = data["connections"]
+    saved_pose_s = data["coordinates"]
 
 print_feedback = False
 loop_saving = False
 show_guide = False
-extra_directory = ""
 downloaded_count = 0
-if len(sys.argv) > 1:
-    extra_directory = sys.argv[1]
-    working_directory = f"./poses/{extra_directory}"
-if len(sys.argv) > 2:
-    with open(f"{sys.argv[2]}.json", "r") as f:
-        data = json.load(f)
-        saved_image_s = cv2.cvtColor(cv2.imread(f"{sys.argv[2]}.png"), cv2.COLOR_BGR2RGB)
-    landmarks_of_interest = data["landmarks"]
-    connections = data["connections"]
-    saved_pose_s = data["coordinates"]
+
+# Process arguments
+extra_directory = ""
+working_directory = "."
+if args.download:
+    extra_directory = args.download
+    working_directory = f"{poses_dir}/{extra_directory}"
+if args.upload:
+    update_from_pose(f"{poses_dir}/{args.upload}")
 else:
     # Define landmarks of interest and their connections
     landmarks_of_interest = {
@@ -29,22 +53,40 @@ else:
         "right_shoulder": 12,
         "left_elbow": 13,
         "right_elbow": 14,
-        "left_wrist": 15,
-        "right_wrist": 16,
-        "left_hip": 23,
-        "right_hip": 24,
+        # "left_wrist": 15,
+        # "right_wrist": 16,
+        # "left_hip": 23,
+        # "right_hip": 24,
     }
     connections = [
         ("left_shoulder", "left_elbow"),
-        ("left_elbow", "left_wrist"),
+        # ("left_elbow", "left_wrist"),
         ("right_shoulder", "right_elbow"),
-        ("right_elbow", "right_wrist"),
-        ("left_shoulder", "left_hip"),
-        ("right_shoulder", "right_hip"),
+        # ("right_elbow", "right_wrist"),
+        # ("left_shoulder", "left_hip"),
+        # ("right_shoulder", "right_hip"),
     ]
     # Initialize dictionaries to store saved poses
     saved_pose_s = {}
-    
+
+countdown_duration = 2  # 2-second delay for pose save
+if args.countdown_duration:
+    countdown_duration = float(args.countdown_duration)   
+
+if args.exercise is not None:
+    poses_to_complete = natsorted([f"{poses_dir}/{args.exercise}/{item.split(".")[0]}" for item in os.listdir(f"{poses_dir}/{args.exercise}") if item.endswith(".json")])
+    current_exercise = 0
+    update_from_pose(poses_to_complete[0])
+    print_feedback = True
+
+save_countdown = 0
+if args.save_countdown is not None:
+    save_countdown = float(args.save_countdown)
+
+sensitivity = 0.7
+if args.sensitivity is not None:
+    sensitivity = float(args.sensitivity)
+
 if not os.path.exists(working_directory):
     os.makedirs(working_directory)
     
@@ -55,7 +97,6 @@ pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5)
 saved_pose_r = {}
 save_timer_s = None  # Timer variable for 's' key countdown
 save_timer_r = None  # Timer variable for 'r' key countdown
-countdown_duration = 0.1  # 2-second delay for pose save
 
 # Initialize counters
 push_up_count = 0
@@ -105,6 +146,9 @@ def calculate_total_similarity(current_pose, saved_pose):
     # Combine scores (you may want to adjust the weights)
     total_score = sum(direction_scores)
     return total_score
+
+def is_matching_pose(similarity):
+    return similarity < sensitivity
 
 def download_saved_pose():
     print("Downloading saved pose")
@@ -176,7 +220,7 @@ while cap.isOpened():
         overlay = saved_image_s
 
         # Define the transparency level for the overlay (0.0 = fully transparent, 1.0 = fully opaque)
-        alpha = 0.5
+        alpha = 0.7
 
         # Blend the images using the alpha value
         frame = cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0)
@@ -196,6 +240,7 @@ while cap.isOpened():
     # Check for the 's' key to start the timer for the first saved pose
     key = cv2.waitKey(1) & 0xFF
     if key == ord('s'):
+        time.sleep(save_countdown)
         save_timer_s = time.time()  # Set the start time for 's' countdown
         print(f"Get ready! Saving pose in {countdown_duration} seconds...")
 
@@ -213,6 +258,7 @@ while cap.isOpened():
             print("Looping saving and downloading")
         else:
             print("Disabled looping saving and downloading")
+            save_timer_s = None
     
     if key == ord('f'):
         print_feedback = not print_feedback
@@ -256,6 +302,15 @@ while cap.isOpened():
     else:
         current_state = "Neither"
 
+    if args.exercise is not None and is_matching_pose(similarity_score_s):
+        current_exercise += 1
+        if current_exercise == len(poses_to_complete):
+            print("Success!")
+            break
+            
+        update_from_pose(poses_to_complete[current_exercise])
+    
+    
     # Display the current state and counts
     cv2.putText(frame, f"Current State: {current_state}", (10, 110), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
     cv2.putText(frame, f"Push-up Count: {push_up_count}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
