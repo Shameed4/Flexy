@@ -1,6 +1,10 @@
 # Flexy: AI-Powered Rehabilitation & Mobility Assistant
 
-> 🏆 **Winner: AllHealth Track — HackHarvard 2025**
+> 🏆 **Winner: AllHealth Track — HackHarvard 2024**
+
+🔗 **Links**
+- 🧠 **Devpost:** https://devpost.com/software/flexy-and-i-know-it  
+- 🎥 **Demo Video:** https://www.youtube.com/watch?v=l7krRFZL9R8
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
 ![React](https://img.shields.io/badge/React-18.0-61DAFB.svg)
