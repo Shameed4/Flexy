@@ -1,12 +1,14 @@
 # Flexy: AI-Powered Rehabilitation & Mobility Assistant
 
+> 🏆 **Winner: AllHealth Track — HackHarvard 2025**
+
 ![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
 ![React](https://img.shields.io/badge/React-18.0-61DAFB.svg)
 ![Flask](https://img.shields.io/badge/Flask-2.0-000000.svg)
 ![MediaPipe](https://img.shields.io/badge/MediaPipe-Vision-green.svg)
 ![IRIS](https://img.shields.io/badge/InterSystems-IRIS_Vector-orange.svg)
 
-**Flexy** is a comprehensive rehabilitation platform designed to make physical therapy engaging, accessible, and accurate. By leveraging computer vision, gamification, and Generative AI, Flexy helps users with arthritis and sports injuries perform exercises correctly and consistently.
+**Flexy** is an award-winning rehabilitation platform designed to make physical therapy engaging, accessible, and accurate. By leveraging computer vision, gamification, and Generative AI, Flexy helps users with arthritis and sports injuries perform exercises correctly and consistently.
 
 ---
 
@@ -77,30 +79,30 @@ A **RAG (Retrieval-Augmented Generation)** chatbot, powered by **Llama 3** and *
 ### Installation
 
 1.  **Clone the repository**
-    ~~~bash
+    ```bash
     git clone [https://github.com/yourusername/flexy.git](https://github.com/yourusername/flexy.git)
     cd flexy
-    ~~~
+    ```
 
 2.  **Backend Setup**
     Navigate to the root directory and install Python dependencies:
-    ~~~bash
+    ```bash
     pip install -r requirements.txt
-    ~~~
+    ```
     *Note: Ensure you have your `.env` file set up with `BASETEN_API_KEY`, `DEEPGRAM_API_KEY`, and IRIS connection details.*
 
 3.  **Frontend Setup**
     Navigate to the client folder:
-    ~~~bash
+    ```bash
     cd client
     npm install
     npm start
-    ~~~
+    ```
 
 4.  **Run the Backend**
-    ~~~bash
+    ```bash
     python api/app.py
-    ~~~
+    ```
 
 ---
 
