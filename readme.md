@@ -1,45 +1,119 @@
-## Flexy and I know it
+# Flexy: AI-Powered Rehabilitation & Mobility Assistant
 
-## Inspiration
+![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
+![React](https://img.shields.io/badge/React-18.0-61DAFB.svg)
+![Flask](https://img.shields.io/badge/Flask-2.0-000000.svg)
+![MediaPipe](https://img.shields.io/badge/MediaPipe-Vision-green.svg)
+![IRIS](https://img.shields.io/badge/InterSystems-IRIS_Vector-orange.svg)
 
-With 528 million people worldwide affected by osteoarthritis and that number expected to surge by 2050, maintaining joint and muscle health is essential. From arthritis and sports injuries to daily joint pain, millions struggle with conditions that limit movement. While there may be no cure, research has shown that targeted stretching and mobility exercises can significantly improve quality of life, reduce pain, and support recovery.
+**Flexy** is a comprehensive rehabilitation platform designed to make physical therapy engaging, accessible, and accurate. By leveraging computer vision, gamification, and Generative AI, Flexy helps users with arthritis and sports injuries perform exercises correctly and consistently.
 
-Our app is designed to make rehabilitation more engaging and accessible, helping individuals recover faster and live pain-free. By offering a gamified experience with accurate posture measurement, we ensure users perform exercises correctly, promoting better outcomes and alleviating physical challenges in a fun, user-friendly way.
+---
 
-## What it does
+## 📸 Demo & Features
 
-1. We use an advanced posture detection algorithm to identify key body joints and landmarks in real-time videos. This allows the system to map the user's movements with high accuracy and ensure that users are performing therapeutic exercises correctly which is crucial for individuals with arthritis or those recovering from sports injuries. Our custom dataset of various correct exercise postures increases the algorithm's precision making it adaptable to different body types and conditions, ensuring exercises are both safe and effective. This reduces the risk of improper movements which can worsen the condition or slow recovery.
+### 1. Real-Time Posture Correction
+Using **MediaPipe** and **OpenCV**, Flexy tracks 33 distinct body landmarks in real-time. It compares user movements against a custom dataset of correct forms using cosine similarity algorithms to ensure safe exercise execution.
 
-    ![videofitness-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/00cf41a7-3317-46a3-bf24-a1322c22c701)
+![Posture Detection Demo](https://github.com/user-attachments/assets/00cf41a7-3317-46a3-bf24-a1322c22c701)
 
+### 2. Gamified "Air Drawing" Rehabilitation
+To combat the monotony of physical therapy, we implemented a gamified module where users control on-screen elements by moving specific joints (shoulders, nose, wrists). Users can "draw" shapes like infinity loops or waves, promoting range of motion in a fun, interactive way.
 
+![Gamification Demo](https://github.com/user-attachments/assets/f27ada11-704b-4c63-8573-c9a10eeb9af6)
 
-2. To make rehabilitation engaging, we introduced a gamified feature that allows users to draw shapes like circles, infinity loops, or waves with their body movements. This interactive approach is designed to help both arthritis patients and the general population improve mobility in a fun and rewarding way. By focusing on specific shapes, the system targets key joints—such as the shoulders, arms, and neck—that are commonly affected by arthritis or injuries. Drawing these shapes promotes range-of-motion exercises, which are essential for reducing stiffness and improving flexibility. The gamification aspect keeps users motivated, making it easier to stay consistent with their exercise routines, which is vital for long-term recovery and pain management.
+### 3. AI Health Companion & Dashboard
+A **RAG (Retrieval-Augmented Generation)** chatbot, powered by **Llama 3** and **InterSystems IRIS Vector Search**, provides personalized recovery advice based on the user's history. The React dashboard visualizes accuracy trends and daily streaks.
 
-   ![2024-10-1307-13-50-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/f27ada11-704b-4c63-8573-c9a10eeb9af6)
+![Dashboard Demo](https://github.com/user-attachments/assets/5d8d61f1-6f48-40d0-8c83-04e9203ea033)
 
+---
 
-3. We integrated a fine-tuned conversational bot that helps users choose different exercises and movements tailored to their specific needs and goals. The bot provides personalized suggestions based on the user's current mobility, pain levels, and progress, guiding them through a variety of stretches and movements that target specific joints or areas of stiffness.
+## 🛠️ Tech Stack
 
-   ![PNG image](https://github.com/user-attachments/assets/5d8d61f1-6f48-40d0-8c83-04e9203ea033)
+### Frontend
+* **React.js:** Dynamic user interface and dashboard.
+* **Material UI (MUI):** Responsive design components.
+* **Clerk:** User management and standard authentication.
 
-## How we built it
+### Backend & API
+* **Flask (Python):** RESTful API handling video streams and model inference.
+* **InterSystems IRIS:** Vector database for storing exercise memory embeddings.
+* **Node.js:** Handling blockchain interactions for data integrity.
 
-Our project begins by capturing real-time video feeds using mobile devices. We utilize MediaPipe and OpenCV to detect key body joints and landmarks within the video, allowing us to map out the user's posture and movements in real-time. We used these tools to create our own custom dataset of demonstration exercises for our users to follow. Computational geometry techniques such as cosine similarity were utilized to determine the similarity between our demonstration and the user's form and it was also used to measure the angles between the landmarks and the drawing. We decided to built a facial authentication system by using blockchain technology and have a front end which has a dashboard of activeness and number of workout session completed. The whole front end was built on React.JS and the backend with the help of Flask. We also took advantage by fine tuning a LLM solely for the purpose of suggesting tailored exercises.
+### AI & Computer Vision
+* **MediaPipe:** Real-time pose and hand landmark detection.
+* **OpenCV:** Image processing and frame manipulation.
+* **LangChain & Llama:** LLM orchestration for the conversational assistant.
+* **Deepgram:** Voice-to-text transcription for hands-free commands.
+* **Face Recognition:** Biometric login system.
 
+### Security
+* **Simulated Blockchain:** A Node.js module that stores facial encoding hashes to ensure user biometric data integrity and privacy.
 
-## Challenges we ran into
+---
 
-One major challenge we encountered was the complexity of implementing real-time posture similarity while maintaining low latency across different devices. To ensure the accuracy of our model we had  process live video which was required optimizing our algorithms, especially when detecting subtle movements. We also faced challenges in the integration of computational geometry for our gamified features, such as recognizing body movements to draw precise shapes like waves and circles. Handling variability in user movements while maintaining the integrity of these shapes added a layer of complexity to the project. We also faced problem to properly pre-process our dataset and make the fine tune the cosine similarity algorithm.
+## ⚙️ System Architecture
 
-## Accomplishments that we're proud of
+1.  **Input:** User provides video feed via webcam and voice commands.
+2.  **Processing:**
+    * Video frames are processed by **MediaPipe** to extract skeletal coordinates.
+    * Coordinates are compared using **NumPy** vector math against a "Gold Standard" JSON dataset of exercises.
+    * Facial data is hashed and verified against the **Blockchain** ledger.
+3.  **Intelligence:**
+    * User queries are embedded and searched against the **IRIS Vector Database**.
+    * Context is fed into **Llama** to generate medical/fitness advice.
+4.  **Output:** Real-time visual feedback overlays, rep counting, and audio guidance.
 
-We are proud of successfully implementing real-time posture detection similarity algorithm that accurately tracks user movements with low latency across different devices. Our integration of computational geometry into the gamified feature allowed us to create an engaging and innovative experience where users can draw shapes like waves and circles to improve mobility. 
+---
 
-## What we learned
+## 🚀 Getting Started
 
-We also increased our understanding of computational geometry and how it can be applied to interactive, gamified features. Another key takeaway was the experience of creating your own custom datasets and train the existing model on that.
+### Prerequisites
+* Python 3.9+
+* Node.js & npm
+* Webcam
 
-## What's next for **Flexy and I know it**
+### Installation
 
-We aim to integrate Flexy with VR allowing users to visualize their movements and corrections during exercises in a more immersive way. We're also exploring the use of wearable technology, like smartwatches or sensors, to provide even more precise tracking and feedback on mobility and joint health. 
+1.  **Clone the repository**
+    ~~~bash
+    git clone [https://github.com/yourusername/flexy.git](https://github.com/yourusername/flexy.git)
+    cd flexy
+    ~~~
+
+2.  **Backend Setup**
+    Navigate to the root directory and install Python dependencies:
+    ~~~bash
+    pip install -r requirements.txt
+    ~~~
+    *Note: Ensure you have your `.env` file set up with `BASETEN_API_KEY`, `DEEPGRAM_API_KEY`, and IRIS connection details.*
+
+3.  **Frontend Setup**
+    Navigate to the client folder:
+    ~~~bash
+    cd client
+    npm install
+    npm start
+    ~~~
+
+4.  **Run the Backend**
+    ~~~bash
+    python api/app.py
+    ~~~
+
+---
+
+## 🧠 Challenges & Solutions
+
+* **Latency vs. Accuracy:** Processing live video for 33 keypoints while running similarity calculations caused initial lag. We optimized this by vectorizing the math operations using NumPy and reducing the frame processing resolution without sacrificing detection accuracy.
+* **Gamification Geometry:** Mapping 3D body movements to 2D drawing planes required complex computational geometry. We implemented a dynamic thresholding system that adapts to the user's distance from the camera.
+* **Data Privacy:** To secure biometric data, we implemented a prototype blockchain storage system (in `backend/blockchain.js`) that ensures facial encodings are decentralized and tamper-proof.
+
+---
+
+## 🔮 What's Next?
+
+* **VR Integration:** Porting the "Air Drawing" feature to Oculus/Vision Pro for immersive rehabilitation.
+* **Wearable Sync:** Integrating with Apple Health/Fitbit to correlate heart rate data with exercise intensity.
+* **Telehealth Portal:** allowing physical therapists to remotely view patient accuracy stats and adjust exercise difficulty.
